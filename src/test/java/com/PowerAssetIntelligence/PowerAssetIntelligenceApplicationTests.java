@@ -1,4 +1,4 @@
-package com.example.PowerAssetIntelligence;
+package com.PowerAssetIntelligence;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
