@@ -1,10 +1,11 @@
 package com.powerassetintelligence.infrastructure.web;
 
+import com.powerassetintelligence.application.dto.TelemetryAcceptedResponse;
 import com.powerassetintelligence.application.dto.TelemetryCreateRequest;
 import com.powerassetintelligence.application.dto.TelemetryResponse;
 import com.powerassetintelligence.application.service.TelemetryService;
+import com.powerassetintelligence.infrastructure.messaging.kafka.TelemetryKafkaProducer;
 import jakarta.validation.Valid;
-import java.net.URI;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -22,16 +23,17 @@ import org.springframework.web.bind.annotation.RestController;
 public class TelemetryController {
 
     private final TelemetryService telemetryService;
+    private final TelemetryKafkaProducer telemetryKafkaProducer;
 
-    public TelemetryController(TelemetryService telemetryService) {
+    public TelemetryController(TelemetryService telemetryService, TelemetryKafkaProducer telemetryKafkaProducer) {
         this.telemetryService = telemetryService;
+        this.telemetryKafkaProducer = telemetryKafkaProducer;
     }
 
     @PostMapping("/telemetry")
-    public ResponseEntity<TelemetryResponse> create(@Valid @RequestBody TelemetryCreateRequest request) {
-        TelemetryResponse response = telemetryService.create(request);
-        return ResponseEntity.created(URI.create("/api/v1/assets/" + response.assetId() + "/telemetry/" + response.id()))
-                .body(response);
+    public ResponseEntity<TelemetryAcceptedResponse> create(@Valid @RequestBody TelemetryCreateRequest request) {
+        TelemetryAcceptedResponse response = telemetryKafkaProducer.publish(request);
+        return ResponseEntity.accepted().body(response);
     }
 
     @GetMapping("/assets/{assetId}/telemetry")

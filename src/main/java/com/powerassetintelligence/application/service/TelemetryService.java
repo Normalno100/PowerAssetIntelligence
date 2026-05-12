@@ -25,12 +25,16 @@ public class TelemetryService {
     }
 
     @Transactional
-    public TelemetryResponse create(TelemetryCreateRequest request) {
-        if (request.externalTelemetryId() != null
-                && telemetryRecordRepository.existsByExternalTelemetryId(request.externalTelemetryId())) {
-            throw new BusinessValidationException("Telemetry record already exists: " + request.externalTelemetryId());
+    public TelemetryResponse persist(TelemetryCreateRequest request) {
+        if (request.externalTelemetryId() != null) {
+            return telemetryRecordRepository.findByExternalTelemetryId(request.externalTelemetryId())
+                    .map(this::toResponse)
+                    .orElseGet(() -> persistNewRecord(request));
         }
+        return persistNewRecord(request);
+    }
 
+    private TelemetryResponse persistNewRecord(TelemetryCreateRequest request) {
         Asset asset = assetService.getAsset(request.assetId());
         if (asset.getStatus() == AssetStatus.DECOMMISSIONED) {
             throw new BusinessValidationException("Decommissioned assets cannot accept operational telemetry: " + asset.getId());

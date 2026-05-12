@@ -14,4 +14,6 @@ public interface TelemetryRecordRepository extends JpaRepository<TelemetryRecord
     Optional<TelemetryRecord> findFirstByAssetIdOrderByTimestampDesc(UUID assetId);
 
     boolean existsByExternalTelemetryId(String externalTelemetryId);
+
+    Optional<TelemetryRecord> findByExternalTelemetryId(String externalTelemetryId);
 }
