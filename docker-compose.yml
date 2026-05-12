@@ -16,6 +16,7 @@ services:
       timeout: 5s
       retries: 5
 
+<<<<<<< codex/design-clean-architecture-for-ai-platform-smm3vy
   kafka:
     image: bitnami/kafka:3.7
     container_name: power-asset-kafka
@@ -41,24 +42,35 @@ services:
       timeout: 5s
       retries: 10
 
+=======
+>>>>>>> main
   app:
     build: .
     container_name: power-asset-api
     depends_on:
       postgres:
         condition: service_healthy
+<<<<<<< codex/design-clean-architecture-for-ai-platform-smm3vy
       kafka:
         condition: service_healthy
+=======
+>>>>>>> main
     environment:
       DB_URL: jdbc:postgresql://postgres:5432/power_asset_intelligence
       DB_USERNAME: power_asset
       DB_PASSWORD: power_asset
+<<<<<<< codex/design-clean-architecture-for-ai-platform-smm3vy
       KAFKA_BOOTSTRAP_SERVERS: kafka:9092
       KAFKA_TELEMETRY_RAW_TOPIC: telemetry.raw.v1
       KAFKA_TELEMETRY_DLT_TOPIC: telemetry.raw.v1.dlt
+=======
+>>>>>>> main
     ports:
       - "8080:8080"
 
 volumes:
   postgres-data:
+<<<<<<< codex/design-clean-architecture-for-ai-platform-smm3vy
   kafka-data:
+=======
+>>>>>>> main
