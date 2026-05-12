@@ -1,4 +1,4 @@
-package com.PowerAssetIntelligence;
+package com.powerassetintelligence;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -9,5 +9,4 @@ public class PowerAssetIntelligenceApplication {
     public static void main(String[] args) {
         SpringApplication.run(PowerAssetIntelligenceApplication.class, args);
     }
-
 }
