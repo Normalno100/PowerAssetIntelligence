@@ -1,0 +1,33 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: power-asset-postgres
+    environment:
+      POSTGRES_DB: power_asset_intelligence
+      POSTGRES_USER: power_asset
+      POSTGRES_PASSWORD: power_asset
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U power_asset -d power_asset_intelligence"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build: .
+    container_name: power-asset-api
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DB_URL: jdbc:postgresql://postgres:5432/power_asset_intelligence
+      DB_USERNAME: power_asset
+      DB_PASSWORD: power_asset
+    ports:
+      - "8080:8080"
+
+volumes:
+  postgres-data:
