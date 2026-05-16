@@ -49,10 +49,15 @@ services:
         condition: service_healthy
       kafka:
         condition: service_healthy
+      kafka:
+        condition: service_healthy
     environment:
       DB_URL: jdbc:postgresql://postgres:5432/power_asset_intelligence
       DB_USERNAME: power_asset
       DB_PASSWORD: power_asset
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      KAFKA_TELEMETRY_RAW_TOPIC: telemetry.raw.v1
+      KAFKA_TELEMETRY_DLT_TOPIC: telemetry.raw.v1.dlt
       KAFKA_BOOTSTRAP_SERVERS: kafka:9092
       KAFKA_TELEMETRY_RAW_TOPIC: telemetry.raw.v1
       KAFKA_TELEMETRY_DLT_TOPIC: telemetry.raw.v1.dlt
@@ -62,3 +67,5 @@ services:
 volumes:
   postgres-data:
   kafka-data:
+  kafka-data:
+
