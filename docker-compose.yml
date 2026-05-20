@@ -41,6 +41,13 @@ services:
       timeout: 5s
       retries: 10
 
+  ml-service:
+    build:
+      context: ./ml-service
+    container_name: power-asset-ml-service
+    ports:
+      - "8000:8000"
+
   app:
     build: .
     container_name: power-asset-api
