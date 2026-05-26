@@ -17,6 +17,7 @@ docker compose up -d --build
 
 ## Endpoints
 - API: `http://localhost:8080`
+- Frontend: `http://localhost:3001`
 - API Health: `http://localhost:8080/actuator/health`
 - Prometheus: `http://localhost:9090`
 - Grafana: `http://localhost:3000`

@@ -150,6 +150,21 @@ services:
       - loki
     logging: *default-logging
 
+
+  frontend:
+    build:
+      context: ./frontend
+    container_name: power-asset-frontend
+    restart: unless-stopped
+    depends_on:
+      app:
+        condition: service_started
+    environment:
+      TZ: UTC
+    ports:
+      - "${FRONTEND_PORT:-3001}:80"
+    logging: *default-logging
+
   grafana:
     image: grafana/grafana:11.1.5
     container_name: power-asset-grafana
