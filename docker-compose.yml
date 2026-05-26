@@ -29,7 +29,7 @@ services:
     logging: *default-logging
 
   kafka:
-    image: bitnami/kafka:3.7
+    image: ${KAFKA_IMAGE:-bitnamilegacy/kafka:3.7.0}
     container_name: power-asset-kafka
     restart: unless-stopped
     environment:
