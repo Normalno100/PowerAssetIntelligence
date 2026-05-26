@@ -59,7 +59,7 @@ class AssetServiceTest {
     @Test
     void getByIdShouldReturnSavedAsset() {
         UUID id = UUID.randomUUID();
-        Asset asset = new Asset(id, AssetType.BREAKER, "BRK-1", LocalDate.of(2021, 1, 1),
+        Asset asset = new Asset(id, AssetType.CIRCUIT_BREAKER, "BRK-1", LocalDate.of(2021, 1, 1),
                 com.powerassetintelligence.domain.model.AssetStatus.ACTIVE,
                 "Site-A", "GE", AssetCriticality.MEDIUM, 25, Map.of());
         when(assetRepository.findById(id)).thenReturn(Optional.of(asset));
