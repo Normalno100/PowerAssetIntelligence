@@ -11,16 +11,34 @@ import java.time.Instant;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
+import org.testcontainers.containers.KafkaContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.utility.DockerImageName;
 
 class TelemetryKafkaFlowIT extends BaseIntegrationTest {
+
+    @Container
+    static final KafkaContainer kafka = new KafkaContainer(
+            DockerImageName.parse("confluentinc/cp-kafka:7.6.1")
+    );
+
+    @DynamicPropertySource
+    static void kafkaProperties(DynamicPropertyRegistry registry) {
+        registry.add("spring.kafka.bootstrap-servers", kafka::getBootstrapServers);
+        registry.add("spring.kafka.admin.auto-create", () -> true);
+        registry.add("app.kafka.telemetry.send-timeout-ms", () -> 10_000);
+    }
 
     @Autowired
     private TelemetryKafkaProducer producer;
 
     @Test
-    void kafkaProducerShouldSendTelemetryMessage() {
+    void kafkaProducerShouldSendTelemetryMessageToContainerTopic() {
+        UUID assetId = UUID.randomUUID();
         TelemetryCreateRequest request = new TelemetryCreateRequest(
-                UUID.randomUUID(),
+                assetId,
                 Instant.now(),
                 BigDecimal.valueOf(75.0),
                 BigDecimal.valueOf(65.0),
@@ -35,5 +53,9 @@ class TelemetryKafkaFlowIT extends BaseIntegrationTest {
         TelemetryAcceptedResponse result = producer.publish(request);
 
         assertThat(result).isNotNull();
+        assertThat(result.eventId()).isNotNull();
+        assertThat(result.assetId()).isEqualTo(assetId);
+        assertThat(result.status()).isEqualTo("ACCEPTED");
+        assertThat(result.acceptedAt()).isNotNull();
     }
 }
