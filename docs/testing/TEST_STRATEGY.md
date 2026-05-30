@@ -3,7 +3,7 @@
 ## Test layers
 - **Unit tests (JUnit 5 + Mockito):** business logic, mapping, validation.
 - **Integration tests (Spring + MockMvc):** API contract and service wiring.
-- **Kafka tests (Spring Kafka):** producer/consumer paths and idempotency checks.
+- **Kafka tests (Spring Kafka):** producer/consumer paths and idempotency checks; prefer `@EmbeddedKafka` for fast developer feedback and reserve Testcontainers Kafka for Docker-enabled CI jobs.
 - **Database tests (JPA/Flyway):** constraints, migrations, repository queries.
 
 ## Isolation strategy
@@ -18,5 +18,5 @@
 
 ## CI gates
 - `mvn test` => unit tests
-- `mvn verify -Pintegration-tests` => integration/kafka/db tests
+- `mvn verify -Pintegration-tests` => integration/kafka/db tests; Docker-dependent Testcontainers suites should be isolated behind an explicit CI profile or tag.
 - Coverage threshold policy should be enforced in CI (Jacoco).

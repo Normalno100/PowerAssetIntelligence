@@ -11,31 +11,26 @@ import java.time.Instant;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
-import org.testcontainers.containers.KafkaContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.utility.DockerImageName;
+import org.springframework.kafka.test.context.EmbeddedKafka;
+import org.springframework.test.context.TestPropertySource;
 
+@EmbeddedKafka(
+        partitions = 1,
+        topics = {"telemetry.raw.v1", "telemetry.raw.v1.dlt"},
+        bootstrapServersProperty = "spring.kafka.bootstrap-servers"
+)
+@TestPropertySource(properties = {
+        "spring.kafka.admin.auto-create=true",
+        "spring.kafka.listener.auto-startup=false",
+        "app.kafka.telemetry.send-timeout-ms=10000"
+})
 class TelemetryKafkaFlowIT extends BaseIntegrationTest {
-
-    @Container
-    static final KafkaContainer kafka = new KafkaContainer(
-            DockerImageName.parse("confluentinc/cp-kafka:7.6.1")
-    );
-
-    @DynamicPropertySource
-    static void kafkaProperties(DynamicPropertyRegistry registry) {
-        registry.add("spring.kafka.bootstrap-servers", kafka::getBootstrapServers);
-        registry.add("spring.kafka.admin.auto-create", () -> true);
-        registry.add("app.kafka.telemetry.send-timeout-ms", () -> 10_000);
-    }
 
     @Autowired
     private TelemetryKafkaProducer producer;
 
     @Test
-    void kafkaProducerShouldSendTelemetryMessageToContainerTopic() {
+    void kafkaProducerShouldSendTelemetryMessageToEmbeddedTopic() {
         UUID assetId = UUID.randomUUID();
         TelemetryCreateRequest request = new TelemetryCreateRequest(
                 assetId,
