@@ -14,9 +14,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
-import org.springframework.stereotype.Component;
 
-@Component
 public class RuleBasedRiskEngine {
 
     public static final String MODEL_VERSION = "rules-2026.05";

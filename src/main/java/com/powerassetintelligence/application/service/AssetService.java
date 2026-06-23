@@ -6,8 +6,8 @@ import com.powerassetintelligence.application.dto.AssetUpdateRequest;
 import com.powerassetintelligence.domain.model.AssetCriticality;
 import com.powerassetintelligence.domain.model.AssetStatus;
 import com.powerassetintelligence.domain.model.AssetType;
-import com.powerassetintelligence.infrastructure.persistence.entity.Asset;
-import com.powerassetintelligence.infrastructure.persistence.repository.AssetRepository;
+import com.powerassetintelligence.domain.model.Asset;
+import com.powerassetintelligence.application.port.out.AssetRepositoryPort;
 import java.util.Map;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
@@ -19,9 +19,9 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(readOnly = true)
 public class AssetService {
 
-    private final AssetRepository assetRepository;
+    private final AssetRepositoryPort assetRepository;
 
-    public AssetService(AssetRepository assetRepository) {
+    public AssetService(AssetRepositoryPort assetRepository) {
         this.assetRepository = assetRepository;
     }
 
