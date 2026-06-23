@@ -10,8 +10,8 @@ import com.powerassetintelligence.application.dto.AssetResponse;
 import com.powerassetintelligence.application.service.AssetService;
 import com.powerassetintelligence.domain.model.AssetCriticality;
 import com.powerassetintelligence.domain.model.AssetType;
-import com.powerassetintelligence.infrastructure.persistence.entity.Asset;
-import com.powerassetintelligence.infrastructure.persistence.repository.AssetRepository;
+import com.powerassetintelligence.domain.model.Asset;
+import com.powerassetintelligence.application.port.out.AssetRepositoryPort;
 import java.time.LocalDate;
 import java.util.Map;
 import java.util.Optional;
@@ -26,7 +26,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class AssetServiceTest {
 
     @Mock
-    private AssetRepository assetRepository;
+    private AssetRepositoryPort assetRepository;
 
     @InjectMocks
     private AssetService assetService;

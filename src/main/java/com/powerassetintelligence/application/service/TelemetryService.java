@@ -3,9 +3,9 @@ package com.powerassetintelligence.application.service;
 import com.powerassetintelligence.application.dto.TelemetryCreateRequest;
 import com.powerassetintelligence.application.dto.TelemetryResponse;
 import com.powerassetintelligence.domain.model.AssetStatus;
-import com.powerassetintelligence.infrastructure.persistence.entity.Asset;
-import com.powerassetintelligence.infrastructure.persistence.entity.TelemetryRecord;
-import com.powerassetintelligence.infrastructure.persistence.repository.TelemetryRecordRepository;
+import com.powerassetintelligence.domain.model.Asset;
+import com.powerassetintelligence.domain.model.TelemetryRecord;
+import com.powerassetintelligence.application.port.out.TelemetryRepositoryPort;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -17,9 +17,9 @@ import org.springframework.transaction.annotation.Transactional;
 public class TelemetryService {
 
     private final AssetService assetService;
-    private final TelemetryRecordRepository telemetryRecordRepository;
+    private final TelemetryRepositoryPort telemetryRecordRepository;
 
-    public TelemetryService(AssetService assetService, TelemetryRecordRepository telemetryRecordRepository) {
+    public TelemetryService(AssetService assetService, TelemetryRepositoryPort telemetryRecordRepository) {
         this.assetService = assetService;
         this.telemetryRecordRepository = telemetryRecordRepository;
     }
@@ -42,7 +42,7 @@ public class TelemetryService {
 
         TelemetryRecord telemetryRecord = new TelemetryRecord(
                 UUID.randomUUID(),
-                asset,
+                asset.getId(),
                 request.timestamp(),
                 request.temperatureCelsius(),
                 request.loadPercent(),
@@ -54,7 +54,7 @@ public class TelemetryService {
                 request.externalTelemetryId()
         );
 
-        return toResponse(telemetryRecordRepository.save(telemetryRecord));
+        return toResponse(telemetryRecordRepository.save(telemetryRecord, asset));
     }
 
     public Page<TelemetryResponse> findByAsset(UUID assetId, Pageable pageable) {
@@ -71,18 +71,18 @@ public class TelemetryService {
 
     private TelemetryResponse toResponse(TelemetryRecord record) {
         return new TelemetryResponse(
-                record.getId(),
-                record.getAsset().getId(),
-                record.getTimestamp(),
-                record.getTemperatureCelsius(),
-                record.getLoadPercent(),
-                record.getVoltageKv(),
-                record.getCurrentAmpere(),
-                record.getVibrationMmSec(),
-                record.getOverheatingCount(),
-                record.getSourceSensorId(),
-                record.getExternalTelemetryId(),
-                record.getCreatedAt()
+                record.id(),
+                record.assetId(),
+                record.timestamp(),
+                record.temperatureCelsius(),
+                record.loadPercent(),
+                record.voltageKv(),
+                record.currentAmpere(),
+                record.vibrationMmSec(),
+                record.overheatingCount(),
+                record.sourceSensorId(),
+                record.externalTelemetryId(),
+                record.createdAt()
         );
     }
 }

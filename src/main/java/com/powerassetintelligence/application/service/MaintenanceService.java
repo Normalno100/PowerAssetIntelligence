@@ -3,9 +3,9 @@ package com.powerassetintelligence.application.service;
 import com.powerassetintelligence.application.dto.MaintenanceCreateRequest;
 import com.powerassetintelligence.application.dto.MaintenanceResponse;
 import com.powerassetintelligence.domain.model.AssetStatus;
-import com.powerassetintelligence.infrastructure.persistence.entity.Asset;
-import com.powerassetintelligence.infrastructure.persistence.entity.MaintenanceRecord;
-import com.powerassetintelligence.infrastructure.persistence.repository.MaintenanceRecordRepository;
+import com.powerassetintelligence.domain.model.Asset;
+import com.powerassetintelligence.domain.model.MaintenanceRecord;
+import com.powerassetintelligence.application.port.out.MaintenanceRepositoryPort;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
@@ -18,9 +18,9 @@ import org.springframework.transaction.annotation.Transactional;
 public class MaintenanceService {
 
     private final AssetService assetService;
-    private final MaintenanceRecordRepository maintenanceRecordRepository;
+    private final MaintenanceRepositoryPort maintenanceRecordRepository;
 
-    public MaintenanceService(AssetService assetService, MaintenanceRecordRepository maintenanceRecordRepository) {
+    public MaintenanceService(AssetService assetService, MaintenanceRepositoryPort maintenanceRecordRepository) {
         this.assetService = assetService;
         this.maintenanceRecordRepository = maintenanceRecordRepository;
     }
@@ -34,7 +34,7 @@ public class MaintenanceService {
 
         MaintenanceRecord record = new MaintenanceRecord(
                 UUID.randomUUID(),
-                asset,
+                asset.getId(),
                 request.repairDate(),
                 request.maintenanceType(),
                 request.description().trim(),
@@ -48,7 +48,7 @@ public class MaintenanceService {
             asset.setStatus(AssetStatus.UNDER_MAINTENANCE);
         }
 
-        return toResponse(maintenanceRecordRepository.save(record));
+        return toResponse(maintenanceRecordRepository.save(record, asset));
     }
 
     public Page<MaintenanceResponse> findByAsset(UUID assetId, Pageable pageable) {
@@ -58,16 +58,16 @@ public class MaintenanceService {
 
     private MaintenanceResponse toResponse(MaintenanceRecord record) {
         return new MaintenanceResponse(
-                record.getId(),
-                record.getAsset().getId(),
-                record.getRepairDate(),
-                record.getMaintenanceType(),
-                record.getDescription(),
-                record.getRepairCost(),
-                record.getFailureCode(),
-                record.getPerformedBy(),
-                List.copyOf(record.getReplacedComponents()),
-                record.getCreatedAt()
+                record.id(),
+                record.assetId(),
+                record.repairDate(),
+                record.maintenanceType(),
+                record.description(),
+                record.repairCost(),
+                record.failureCode(),
+                record.performedBy(),
+                List.copyOf(record.replacedComponents()),
+                record.createdAt()
         );
     }
 }
