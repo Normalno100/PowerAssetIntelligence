@@ -15,7 +15,7 @@ cp .env.example .env
 docker compose up -d --build
 ```
 
-## Endpoints
+## Endpoints****
 - API: `http://localhost:8080`
 - Frontend: `http://localhost:3001`
 - API Health: `http://localhost:8080/actuator/health`

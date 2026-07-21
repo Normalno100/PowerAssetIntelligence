@@ -30,11 +30,11 @@ public class AssetService {
         Asset asset = new Asset(
                 UUID.randomUUID(),
                 request.type(),
-                request.name().trim(),
+                request.name() != null ? request.name().trim() : null,
                 request.installationDate(),
                 AssetStatus.ACTIVE,
-                request.location().trim(),
-                request.manufacturer().trim(),
+                request.location() != null ? request.location().trim() : null,
+                request.manufacturer() != null ? request.manufacturer().trim() : null,
                 request.criticality(),
                 request.expectedServiceLifeYears(),
                 nullToEmpty(request.technicalParameters())
