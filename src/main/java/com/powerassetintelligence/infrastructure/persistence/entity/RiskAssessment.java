@@ -19,6 +19,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import com.powerassetintelligence.infrastructure.persistence.entity.AssetEntity;
 
 @Entity
 @Table(
@@ -36,7 +37,7 @@ public class RiskAssessment {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "asset_id", nullable = false)
-    private Asset asset;
+    private AssetEntity asset;
 
     @Column(name = "assessed_at", nullable = false)
     private Instant assessedAt;
@@ -72,7 +73,7 @@ public class RiskAssessment {
 
     public RiskAssessment(
             UUID id,
-            Asset asset,
+            AssetEntity asset,
             Instant assessedAt,
             BigDecimal riskScore,
             RiskLevel riskLevel,
@@ -101,7 +102,7 @@ public class RiskAssessment {
         return id;
     }
 
-    public Asset getAsset() {
+    public AssetEntity getAsset() {
         return asset;
     }
 

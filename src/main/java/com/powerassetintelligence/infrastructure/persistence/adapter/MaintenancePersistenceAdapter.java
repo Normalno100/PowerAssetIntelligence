@@ -19,7 +19,10 @@ public class MaintenancePersistenceAdapter implements MaintenanceRepositoryPort 
     public MaintenancePersistenceAdapter(MaintenanceRecordRepository repository, AssetRepository assetRepository) { this.repository = repository; this.assetRepository = assetRepository; }
     @Override public MaintenanceRecord save(MaintenanceRecord record, Asset asset) {
         var assetEntity = assetRepository.findById(asset.getId()).orElseThrow();
-        assetEntity.setStatus(asset.getStatus());
+        assetEntity.setType(asset.getType()); assetEntity.setName(asset.getName()); assetEntity.setInstallationDate(asset.getInstallationDate());
+        assetEntity.setStatus(asset.getStatus()); assetEntity.setLocation(asset.getLocation()); assetEntity.setManufacturer(asset.getManufacturer());
+        assetEntity.setCriticality(asset.getCriticality()); assetEntity.setExpectedServiceLifeYears(asset.getExpectedServiceLifeYears());
+        assetEntity.setTechnicalParameters(asset.getTechnicalParameters());
         var entity = new com.powerassetintelligence.infrastructure.persistence.entity.MaintenanceRecord(record.id(), assetEntity,
                 record.repairDate(), record.maintenanceType(), record.description(), record.repairCost(), record.failureCode(),
                 record.performedBy(), record.replacedComponents());

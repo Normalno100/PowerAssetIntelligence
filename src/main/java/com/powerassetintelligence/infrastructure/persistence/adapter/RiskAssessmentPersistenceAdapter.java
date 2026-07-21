@@ -19,6 +19,10 @@ public class RiskAssessmentPersistenceAdapter implements RiskAssessmentRepositor
     public RiskAssessmentPersistenceAdapter(RiskAssessmentRepository repository, AssetRepository assetRepository) { this.repository = repository; this.assetRepository = assetRepository; }
     @Override public RiskAssessment save(RiskAssessment assessment, Asset asset) {
         var assetEntity = assetRepository.findById(asset.getId()).orElseThrow();
+        assetEntity.setType(asset.getType()); assetEntity.setName(asset.getName()); assetEntity.setInstallationDate(asset.getInstallationDate());
+        assetEntity.setStatus(asset.getStatus()); assetEntity.setLocation(asset.getLocation()); assetEntity.setManufacturer(asset.getManufacturer());
+        assetEntity.setCriticality(asset.getCriticality()); assetEntity.setExpectedServiceLifeYears(asset.getExpectedServiceLifeYears());
+        assetEntity.setTechnicalParameters(asset.getTechnicalParameters());
         var entity = new com.powerassetintelligence.infrastructure.persistence.entity.RiskAssessment(assessment.id(), assetEntity,
                 assessment.assessedAt(), assessment.riskScore(), assessment.riskLevel(), assessment.riskFactors(),
                 assessment.recommendations(), assessment.modelVersion(), assessment.explanation());

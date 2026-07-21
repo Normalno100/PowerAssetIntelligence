@@ -8,7 +8,7 @@ import com.powerassetintelligence.domain.model.TelemetryRecord;
 public final class PersistenceMapper {
     private PersistenceMapper() {}
 
-    public static Asset toDomain(com.powerassetintelligence.infrastructure.persistence.entity.Asset entity) {
+    public static Asset toDomain(com.powerassetintelligence.infrastructure.persistence.entity.AssetEntity entity) {
         return new Asset(entity.getId(), entity.getType(), entity.getName(), entity.getInstallationDate(),
                 entity.getStatus(), entity.getLocation(), entity.getManufacturer(), entity.getCriticality(),
                 entity.getExpectedServiceLifeYears(), entity.getTechnicalParameters(), entity.getVersion(),

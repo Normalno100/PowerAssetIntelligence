@@ -20,6 +20,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import com.powerassetintelligence.infrastructure.persistence.entity.AssetEntity;
 
 @Entity
 @Table(
@@ -37,7 +38,7 @@ public class MaintenanceRecord {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "asset_id", nullable = false)
-    private Asset asset;
+    private AssetEntity asset;
 
     @Column(name = "repair_date", nullable = false)
     private LocalDate repairDate;
@@ -71,7 +72,7 @@ public class MaintenanceRecord {
 
     public MaintenanceRecord(
             UUID id,
-            Asset asset,
+            AssetEntity asset,
             LocalDate repairDate,
             MaintenanceType maintenanceType,
             String description,
@@ -100,7 +101,7 @@ public class MaintenanceRecord {
         return id;
     }
 
-    public Asset getAsset() {
+    public AssetEntity getAsset() {
         return asset;
     }
 

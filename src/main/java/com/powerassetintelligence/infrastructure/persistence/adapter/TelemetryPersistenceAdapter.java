@@ -19,6 +19,10 @@ public class TelemetryPersistenceAdapter implements TelemetryRepositoryPort {
     public TelemetryPersistenceAdapter(TelemetryRecordRepository repository, AssetRepository assetRepository) { this.repository = repository; this.assetRepository = assetRepository; }
     @Override public TelemetryRecord save(TelemetryRecord record, Asset asset) {
         var assetEntity = assetRepository.findById(asset.getId()).orElseThrow();
+        assetEntity.setType(asset.getType()); assetEntity.setName(asset.getName()); assetEntity.setInstallationDate(asset.getInstallationDate());
+        assetEntity.setStatus(asset.getStatus()); assetEntity.setLocation(asset.getLocation()); assetEntity.setManufacturer(asset.getManufacturer());
+        assetEntity.setCriticality(asset.getCriticality()); assetEntity.setExpectedServiceLifeYears(asset.getExpectedServiceLifeYears());
+        assetEntity.setTechnicalParameters(asset.getTechnicalParameters());
         var entity = new com.powerassetintelligence.infrastructure.persistence.entity.TelemetryRecord(record.id(), assetEntity,
                 record.timestamp(), record.temperatureCelsius(), record.loadPercent(), record.voltageKv(), record.currentAmpere(),
                 record.vibrationMmSec(), record.overheatingCount(), record.sourceSensorId(), record.externalTelemetryId());

@@ -12,6 +12,7 @@ import jakarta.persistence.Table;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.UUID;
+import com.powerassetintelligence.infrastructure.persistence.entity.AssetEntity;
 
 @Entity
 @Table(
@@ -29,7 +30,7 @@ public class TelemetryRecord {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "asset_id", nullable = false)
-    private Asset asset;
+    private AssetEntity asset;
 
     @Column(name = "recorded_at", nullable = false)
     private Instant timestamp;
@@ -66,7 +67,7 @@ public class TelemetryRecord {
 
     public TelemetryRecord(
             UUID id,
-            Asset asset,
+            AssetEntity asset,
             Instant timestamp,
             BigDecimal temperatureCelsius,
             BigDecimal loadPercent,
@@ -99,7 +100,7 @@ public class TelemetryRecord {
         return id;
     }
 
-    public Asset getAsset() {
+    public AssetEntity getAsset() {
         return asset;
     }
 

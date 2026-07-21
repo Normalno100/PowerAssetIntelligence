@@ -33,7 +33,7 @@ import java.util.UUID;
                 @Index(name = "idx_assets_location", columnList = "location")
         }
 )
-public class Asset {
+public class AssetEntity {
 
     @Id
     @Column(nullable = false, updatable = false)
@@ -82,10 +82,10 @@ public class Asset {
     @Column(nullable = false)
     private Instant updatedAt;
 
-    protected Asset() {
+    protected AssetEntity() {
     }
 
-    public Asset(
+    public AssetEntity(
             UUID id,
             AssetType type,
             String name,

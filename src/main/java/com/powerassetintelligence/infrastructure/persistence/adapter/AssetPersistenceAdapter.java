@@ -5,6 +5,7 @@ import com.powerassetintelligence.domain.model.Asset;
 import com.powerassetintelligence.domain.model.AssetCriticality;
 import com.powerassetintelligence.domain.model.AssetStatus;
 import com.powerassetintelligence.domain.model.AssetType;
+import com.powerassetintelligence.infrastructure.persistence.entity.AssetEntity;
 import com.powerassetintelligence.infrastructure.persistence.mapper.PersistenceMapper;
 import com.powerassetintelligence.infrastructure.persistence.repository.AssetRepository;
 import java.util.Optional;
@@ -21,8 +22,8 @@ public class AssetPersistenceAdapter implements AssetRepositoryPort {
 
     @Override
     public Asset save(Asset asset) {
-        com.powerassetintelligence.infrastructure.persistence.entity.Asset entity = repository.findById(asset.getId())
-                .orElseGet(() -> new com.powerassetintelligence.infrastructure.persistence.entity.Asset(asset.getId(),
+        com.powerassetintelligence.infrastructure.persistence.entity.AssetEntity entity = repository.findById(asset.getId())
+                .orElseGet(() -> new com.powerassetintelligence.infrastructure.persistence.entity.AssetEntity(asset.getId(),
                         asset.getType(), asset.getName(), asset.getInstallationDate(), asset.getStatus(),
                         asset.getLocation(), asset.getManufacturer(), asset.getCriticality(),
                         asset.getExpectedServiceLifeYears(), asset.getTechnicalParameters()));
@@ -35,6 +36,7 @@ public class AssetPersistenceAdapter implements AssetRepositoryPort {
 
     @Override public Optional<Asset> findById(UUID assetId) { return repository.findById(assetId).map(PersistenceMapper::toDomain); }
     @Override public Page<Asset> search(AssetType type, AssetStatus status, AssetCriticality criticality, String location, Pageable pageable) {
-        return repository.search(type, status, criticality, location, pageable).map(PersistenceMapper::toDomain);
+        return repository.search(type, status, criticality, location, pageable)
+                .map(entity -> PersistenceMapper.toDomain(entity));
     }
 }
