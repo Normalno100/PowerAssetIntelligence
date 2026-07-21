@@ -5,7 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import com.powerassetintelligence.domain.model.AssetCriticality;
 import com.powerassetintelligence.domain.model.AssetStatus;
 import com.powerassetintelligence.domain.model.AssetType;
-import com.powerassetintelligence.infrastructure.persistence.entity.Asset;
+import com.powerassetintelligence.infrastructure.persistence.entity.AssetEntity;
 import com.powerassetintelligence.infrastructure.persistence.entity.TelemetryRecord;
 import com.powerassetintelligence.infrastructure.persistence.repository.AssetRepository;
 import com.powerassetintelligence.infrastructure.persistence.repository.TelemetryRecordRepository;
@@ -29,7 +29,7 @@ class AssetRepositoryDbIT extends BaseIntegrationTest {
 
     @Test
     void shouldFailOnDuplicateExternalTelemetryId() {
-        Asset asset = assetRepository.saveAndFlush(new Asset(UUID.randomUUID(), AssetType.TRANSFORMER, "DB-1",
+        AssetEntity asset = assetRepository.saveAndFlush(new AssetEntity(UUID.randomUUID(), AssetType.TRANSFORMER, "DB-1",
                 LocalDate.of(2022, 2, 2), AssetStatus.ACTIVE, "Loc-1", "ABB", AssetCriticality.HIGH, 30, Map.of()));
 
         TelemetryRecord first = new TelemetryRecord(UUID.randomUUID(), asset, Instant.now(), BigDecimal.TEN,
