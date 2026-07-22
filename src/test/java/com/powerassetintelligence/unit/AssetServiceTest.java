@@ -5,8 +5,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.powerassetintelligence.application.dto.AssetCreateRequest;
 import com.powerassetintelligence.application.dto.AssetResponse;
+import com.powerassetintelligence.infrastructure.web.dto.AssetCreateRequest;
 import com.powerassetintelligence.application.service.AssetService;
 import com.powerassetintelligence.domain.model.AssetCriticality;
 import com.powerassetintelligence.domain.model.AssetType;
@@ -34,12 +34,12 @@ class AssetServiceTest {
     @Test
     void createShouldTrimFieldsAndPersistAsset() {
         AssetCreateRequest request = new AssetCreateRequest(
-                AssetType.TRANSFORMER,
+                "TRANSFORMER",
                 "  TX-101  ",
                 LocalDate.of(2022, 5, 3),
                 "  North substation  ",
                 "  ABB  ",
-                AssetCriticality.HIGH,
+                "HIGH",
                 30,
                 Map.of("kv", "110")
         );

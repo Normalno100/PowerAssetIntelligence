@@ -1,8 +1,8 @@
 package com.powerassetintelligence.infrastructure.web;
 
-import com.powerassetintelligence.application.dto.AssetCreateRequest;
+import com.powerassetintelligence.infrastructure.web.dto.AssetCreateRequest;
 import com.powerassetintelligence.application.dto.AssetResponse;
-import com.powerassetintelligence.application.dto.AssetUpdateRequest;
+import com.powerassetintelligence.infrastructure.web.dto.AssetUpdateRequest;
 import com.powerassetintelligence.application.service.AssetService;
 import com.powerassetintelligence.domain.model.AssetCriticality;
 import com.powerassetintelligence.domain.model.AssetStatus;

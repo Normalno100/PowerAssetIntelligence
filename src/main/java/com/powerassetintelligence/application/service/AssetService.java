@@ -1,8 +1,8 @@
 package com.powerassetintelligence.application.service;
 
-import com.powerassetintelligence.application.dto.AssetCreateRequest;
+import com.powerassetintelligence.infrastructure.web.dto.AssetCreateRequest;
 import com.powerassetintelligence.application.dto.AssetResponse;
-import com.powerassetintelligence.application.dto.AssetUpdateRequest;
+import com.powerassetintelligence.infrastructure.web.dto.AssetUpdateRequest;
 import com.powerassetintelligence.domain.model.AssetCriticality;
 import com.powerassetintelligence.domain.model.AssetStatus;
 import com.powerassetintelligence.domain.model.AssetType;
@@ -29,13 +29,13 @@ public class AssetService {
     public AssetResponse create(AssetCreateRequest request) {
         Asset asset = new Asset(
                 UUID.randomUUID(),
-                request.type(),
+                parseAssetType(request.type()),
                 request.name() != null ? request.name().trim() : null,
                 request.installationDate(),
                 AssetStatus.ACTIVE,
                 request.location() != null ? request.location().trim() : null,
                 request.manufacturer() != null ? request.manufacturer().trim() : null,
-                request.criticality(),
+                parseAssetCriticality(request.criticality()),
                 request.expectedServiceLifeYears(),
                 nullToEmpty(request.technicalParameters())
         );
@@ -61,7 +61,7 @@ public class AssetService {
     public AssetResponse update(UUID assetId, AssetUpdateRequest request) {
         Asset asset = getAsset(assetId);
         if (request.type() != null) {
-            asset.setType(request.type());
+            asset.setType(parseAssetType(request.type()));
         }
         if (request.name() != null) {
             asset.setName(request.name().trim());
@@ -70,7 +70,7 @@ public class AssetService {
             asset.setInstallationDate(request.installationDate());
         }
         if (request.status() != null) {
-            asset.setStatus(request.status());
+            asset.setStatus(parseAssetStatus(request.status()));
         }
         if (request.location() != null) {
             asset.setLocation(request.location().trim());
@@ -79,7 +79,7 @@ public class AssetService {
             asset.setManufacturer(request.manufacturer().trim());
         }
         if (request.criticality() != null) {
-            asset.setCriticality(request.criticality());
+            asset.setCriticality(parseAssetCriticality(request.criticality()));
         }
         if (request.expectedServiceLifeYears() != null) {
             asset.setExpectedServiceLifeYears(request.expectedServiceLifeYears());
@@ -126,5 +126,17 @@ public class AssetService {
 
     private String blankToNull(String value) {
         return value == null || value.isBlank() ? null : value;
+    }
+
+    private AssetType parseAssetType(String value) {
+        return AssetType.valueOf(value.toUpperCase());
+    }
+
+    private AssetCriticality parseAssetCriticality(String value) {
+        return AssetCriticality.valueOf(value.toUpperCase());
+    }
+
+    private AssetStatus parseAssetStatus(String value) {
+        return AssetStatus.valueOf(value.toUpperCase());
     }
 }
