@@ -2,9 +2,9 @@ package com.powerassetintelligence.application.service;
 
 import com.powerassetintelligence.application.dto.RiskAssessmentDetailsResponse;
 import com.powerassetintelligence.application.dto.RiskAssessmentResponse;
+import com.powerassetintelligence.application.dto.RiskFeatures;
 import com.powerassetintelligence.application.dto.RiskFeaturesResponse;
-import com.powerassetintelligence.core.ai.RiskFeatures;
-import com.powerassetintelligence.core.ai.RiskScoringResult;
+import com.powerassetintelligence.application.dto.RiskScoringResult;
 import com.powerassetintelligence.application.port.out.RiskScoringPort;
 import com.powerassetintelligence.domain.model.Asset;
 import com.powerassetintelligence.domain.model.RiskAssessment;
@@ -12,6 +12,8 @@ import com.powerassetintelligence.domain.model.TelemetryRecord;
 import com.powerassetintelligence.application.port.out.MaintenanceRepositoryPort;
 import com.powerassetintelligence.application.port.out.RiskAssessmentRepositoryPort;
 import com.powerassetintelligence.application.port.out.TelemetryRepositoryPort;
+import com.powerassetintelligence.application.port.out.PageRequest;
+import com.powerassetintelligence.application.port.out.PageResult;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -52,8 +54,8 @@ public class RiskAnalysisService {
     @Transactional
     public RiskAssessmentDetailsResponse assess(UUID assetId) {
         Asset asset = assetService.getAsset(assetId);
-        RiskFeatures features = extractFeatures(asset);
-        RiskScoringResult scoringResult = riskEngine.score(features);
+        var dtoFeatures = extractFeatures(asset);
+        var scoringResult = riskEngine.score(dtoFeatures);
         RiskAssessment assessment = new RiskAssessment(
                 UUID.randomUUID(),
                 asset.getId(),
@@ -66,8 +68,8 @@ public class RiskAnalysisService {
                 scoringResult.explanation()
         );
         return new RiskAssessmentDetailsResponse(
-                toResponse(riskAssessmentRepository.save(assessment, asset)),
-                toFeaturesResponse(features)
+                toResponse(riskAssessmentRepository.save(assessment)),
+                toFeaturesResponse(dtoFeatures)
         );
     }
 
@@ -78,13 +80,17 @@ public class RiskAnalysisService {
                 .orElseThrow(() -> new ResourceNotFoundException("Risk assessment not found for asset: " + assetId));
     }
 
-    public Page<RiskAssessmentResponse> findByAsset(UUID assetId, Pageable pageable) {
+    public PageResult<RiskAssessmentResponse> findByAsset(UUID assetId, PageRequest pageRequest) {
         assetService.getAsset(assetId);
-        return riskAssessmentRepository.findByAssetId(assetId, pageable).map(this::toResponse);
+        var result = riskAssessmentRepository.findByAssetId(assetId, pageRequest);
+        var content = result.content().stream().map(this::toResponse).toList();
+        return new PageResult<>(content, result.page(), result.size(), result.totalElements(), result.totalPages());
     }
 
-    public Page<RiskAssessmentResponse> findTopRisky(Pageable pageable) {
-        return riskAssessmentRepository.findAll(pageable).map(this::toResponse);
+    public PageResult<RiskAssessmentResponse> findTopRisky(PageRequest pageRequest) {
+        var result = riskAssessmentRepository.findAll(pageRequest);
+        var content = result.content().stream().map(this::toResponse).toList();
+        return new PageResult<>(content, result.page(), result.size(), result.totalElements(), result.totalPages());
     }
 
     private RiskFeatures extractFeatures(Asset asset) {

@@ -3,6 +3,7 @@ package com.powerassetintelligence.infrastructure.web;
 import com.powerassetintelligence.application.dto.TelemetryAcceptedResponse;
 import com.powerassetintelligence.application.dto.TelemetryCreateRequest;
 import com.powerassetintelligence.application.dto.TelemetryResponse;
+import com.powerassetintelligence.application.port.out.PageResult;
 import com.powerassetintelligence.application.service.TelemetryService;
 import com.powerassetintelligence.infrastructure.messaging.kafka.TelemetryKafkaProducer;
 import jakarta.validation.Valid;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import com.powerassetintelligence.infrastructure.web.WebPageMapper;
 
 @RestController
 @RequestMapping("/api/v1")
@@ -37,11 +39,13 @@ public class TelemetryController {
     }
 
     @GetMapping("/assets/{assetId}/telemetry")
-    public Page<TelemetryResponse> findByAsset(
+    public PageResult<TelemetryResponse> findByAsset(
             @PathVariable UUID assetId,
             @PageableDefault(size = 100, sort = "timestamp") Pageable pageable
     ) {
-        return telemetryService.findByAsset(assetId, pageable);
+        var pageRequest = WebPageMapper.toPageRequest(pageable);
+        var result = telemetryService.findByAsset(assetId, pageRequest);
+        return new PageResult<>(result.content().stream().toList(), result.page(), result.size(), result.totalElements(), result.totalPages());
     }
 
     @GetMapping("/assets/{assetId}/telemetry/latest")

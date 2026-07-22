@@ -1,9 +1,13 @@
 package com.powerassetintelligence.infrastructure.persistence.mapper;
 
+import com.powerassetintelligence.application.port.out.PageResult;
 import com.powerassetintelligence.domain.model.Asset;
 import com.powerassetintelligence.domain.model.MaintenanceRecord;
 import com.powerassetintelligence.domain.model.RiskAssessment;
 import com.powerassetintelligence.domain.model.TelemetryRecord;
+import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Sort;
 
 public final class PersistenceMapper {
     private PersistenceMapper() {}
@@ -32,5 +36,26 @@ public final class PersistenceMapper {
         return new RiskAssessment(entity.getId(), entity.getAsset().getId(), entity.getAssessedAt(),
                 entity.getRiskScore(), entity.getRiskLevel(), entity.getRiskFactors(), entity.getRecommendations(),
                 entity.getModelVersion(), entity.getExplanation(), entity.getCreatedAt());
+    }
+
+    public static org.springframework.data.domain.Pageable toSpringPageable(com.powerassetintelligence.application.port.out.PageRequest pageRequest) {
+        if (pageRequest == null || pageRequest.size() <= 0) {
+            return org.springframework.data.domain.PageRequest.of(0, 20);
+        }
+        if (pageRequest.sort().isEmpty()) {
+            return org.springframework.data.domain.PageRequest.of(pageRequest.page(), pageRequest.size());
+        }
+        var sortBuilder = org.springframework.data.domain.Sort.by(pageRequest.sort().stream()
+                .map(sortOrder -> {
+                    var direction = sortOrder.direction() == com.powerassetintelligence.application.port.out.PageRequest.SortOrder.Direction.ASC
+                            ? Sort.Direction.ASC : Sort.Direction.DESC;
+                    return new org.springframework.data.domain.Sort.Order(direction, sortOrder.field());
+                }).toList());
+        return org.springframework.data.domain.PageRequest.of(pageRequest.page(), pageRequest.size(), sortBuilder);
+    }
+
+    public static <S, T> PageResult<T> toPageResult(Page<S> page, java.util.function.Function<S, T> mapper) {
+        var content = page.getContent().stream().map(mapper).toList();
+        return new PageResult<>(content, page.getNumber(), page.getSize(), page.getTotalElements(), page.getTotalPages());
     }
 }

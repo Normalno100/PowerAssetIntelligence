@@ -8,6 +8,8 @@ import com.powerassetintelligence.domain.model.AssetStatus;
 import com.powerassetintelligence.domain.model.AssetType;
 import com.powerassetintelligence.domain.model.Asset;
 import com.powerassetintelligence.application.port.out.AssetRepositoryPort;
+import com.powerassetintelligence.application.port.out.PageRequest;
+import com.powerassetintelligence.application.port.out.PageResult;
 import java.util.Map;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
@@ -42,15 +44,16 @@ public class AssetService {
         return toResponse(assetRepository.save(asset));
     }
 
-    public Page<AssetResponse> search(
+    public PageResult<AssetResponse> search(
             AssetType type,
             AssetStatus status,
             AssetCriticality criticality,
             String location,
-            Pageable pageable
+            PageRequest pageRequest
     ) {
-        return assetRepository.search(type, status, criticality, blankToNull(location), pageable)
-                .map(this::toResponse);
+        var result = assetRepository.search(type, status, criticality, blankToNull(location), pageRequest);
+        var content = result.content().stream().map(this::toResponse).toList();
+        return new PageResult<>(content, result.page(), result.size(), result.totalElements(), result.totalPages());
     }
 
     public AssetResponse getById(UUID assetId) {

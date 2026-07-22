@@ -3,6 +3,7 @@ package com.powerassetintelligence.infrastructure.web;
 import com.powerassetintelligence.infrastructure.web.dto.AssetCreateRequest;
 import com.powerassetintelligence.application.dto.AssetResponse;
 import com.powerassetintelligence.infrastructure.web.dto.AssetUpdateRequest;
+import com.powerassetintelligence.application.port.out.PageResult;
 import com.powerassetintelligence.application.service.AssetService;
 import com.powerassetintelligence.domain.model.AssetCriticality;
 import com.powerassetintelligence.domain.model.AssetStatus;
@@ -22,6 +23,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import com.powerassetintelligence.infrastructure.web.WebPageMapper;
 
 @RestController
 @RequestMapping("/api/v1/assets")
@@ -40,14 +42,16 @@ public class AssetController {
     }
 
     @GetMapping
-    public Page<AssetResponse> search(
+    public PageResult<AssetResponse> search(
             @RequestParam(required = false) AssetType type,
             @RequestParam(required = false) AssetStatus status,
             @RequestParam(required = false) AssetCriticality criticality,
             @RequestParam(required = false) String location,
             @PageableDefault(size = 20, sort = "name") Pageable pageable
     ) {
-        return assetService.search(type, status, criticality, location, pageable);
+        var pageRequest = WebPageMapper.toPageRequest(pageable);
+        var result = assetService.search(type, status, criticality, location, pageRequest);
+        return new PageResult<>(result.content().stream().toList(), result.page(), result.size(), result.totalElements(), result.totalPages());
     }
 
     @GetMapping("/{assetId}")

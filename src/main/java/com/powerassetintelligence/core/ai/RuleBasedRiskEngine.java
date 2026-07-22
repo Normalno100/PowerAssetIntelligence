@@ -15,7 +15,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
-public class RuleBasedRiskEngine {
+public class RuleBasedRiskEngine implements CoreRiskScoringPort {
 
     public static final String MODEL_VERSION = "rules-2026.05";
     private static final BigDecimal MAX_SCORE = BigDecimal.valueOf(100);
@@ -33,22 +33,23 @@ public class RuleBasedRiskEngine {
         );
     }
 
-    public RiskScoringResult score(RiskFeatures features) {
-        List<RiskRuleResult> matchedRules = rules.stream()
+    @Override
+    public com.powerassetintelligence.application.dto.RiskScoringResult score(com.powerassetintelligence.application.dto.RiskFeatures features) {
+        List<com.powerassetintelligence.core.ai.RiskRuleResult> matchedRules = rules.stream()
                 .map(rule -> rule.evaluate(features))
                 .flatMap(optional -> optional.stream())
                 .toList();
 
         BigDecimal baseScore = matchedRules.stream()
-                .map(RiskRuleResult::scoreContribution)
+                .map(com.powerassetintelligence.core.ai.RiskRuleResult::scoreContribution)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
         BigDecimal criticalityBonus = criticalityBonus(features.criticality());
         BigDecimal score = baseScore.add(criticalityBonus).min(MAX_SCORE).setScale(2, RoundingMode.HALF_UP);
-        RiskLevel level = toRiskLevel(score);
+        com.powerassetintelligence.domain.model.RiskLevel level = toRiskLevel(score);
 
         Set<String> recommendations = new LinkedHashSet<>();
         List<String> riskFactors = new ArrayList<>();
-        for (RiskRuleResult result : matchedRules) {
+        for (com.powerassetintelligence.core.ai.RiskRuleResult result : matchedRules) {
             riskFactors.add(result.ruleCode() + ": " + result.riskFactor());
             recommendations.addAll(result.recommendations());
         }
@@ -62,7 +63,7 @@ public class RuleBasedRiskEngine {
             riskFactors.add("ASSET_CRITICALITY: Criticality bonus applied: " + criticalityBonus);
         }
 
-        return new RiskScoringResult(
+        var result = new com.powerassetintelligence.application.dto.RiskScoringResult(
                 score,
                 level,
                 List.copyOf(riskFactors),
@@ -70,6 +71,7 @@ public class RuleBasedRiskEngine {
                 buildExplanation(features, matchedRules.size(), criticalityBonus),
                 MODEL_VERSION
         );
+        return result;
     }
 
     private BigDecimal criticalityBonus(AssetCriticality criticality) {
@@ -84,7 +86,7 @@ public class RuleBasedRiskEngine {
         };
     }
 
-    private RiskLevel toRiskLevel(BigDecimal score) {
+    private com.powerassetintelligence.domain.model.RiskLevel toRiskLevel(BigDecimal score) {
         if (score.compareTo(BigDecimal.valueOf(85)) >= 0) {
             return RiskLevel.CRITICAL;
         }
@@ -97,7 +99,7 @@ public class RuleBasedRiskEngine {
         return RiskLevel.LOW;
     }
 
-    private void addLevelRecommendation(RiskLevel level, Set<String> recommendations) {
+    private void addLevelRecommendation(com.powerassetintelligence.domain.model.RiskLevel level, Set<String> recommendations) {
         switch (level) {
             case CRITICAL -> recommendations.add("Create immediate maintenance work order and notify dispatcher");
             case HIGH -> recommendations.add("Prioritize asset in the next maintenance planning window");
@@ -106,7 +108,7 @@ public class RuleBasedRiskEngine {
         }
     }
 
-    private String buildExplanation(RiskFeatures features, int matchedRuleCount, BigDecimal criticalityBonus) {
+    private String buildExplanation(com.powerassetintelligence.application.dto.RiskFeatures features, int matchedRuleCount, BigDecimal criticalityBonus) {
         return "Rule-based assessment evaluated " + matchedRuleCount
                 + " triggered rules for asset " + features.assetId()
                 + "; ageYears=" + features.assetAgeYears()

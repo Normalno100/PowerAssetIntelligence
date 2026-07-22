@@ -6,6 +6,8 @@ import com.powerassetintelligence.domain.model.AssetStatus;
 import com.powerassetintelligence.domain.model.Asset;
 import com.powerassetintelligence.domain.model.TelemetryRecord;
 import com.powerassetintelligence.application.port.out.TelemetryRepositoryPort;
+import com.powerassetintelligence.application.port.out.PageRequest;
+import com.powerassetintelligence.application.port.out.PageResult;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -54,12 +56,14 @@ public class TelemetryService {
                 request.externalTelemetryId()
         );
 
-        return toResponse(telemetryRecordRepository.save(telemetryRecord, asset));
+        return toResponse(telemetryRecordRepository.save(telemetryRecord));
     }
 
-    public Page<TelemetryResponse> findByAsset(UUID assetId, Pageable pageable) {
+    public PageResult<TelemetryResponse> findByAsset(UUID assetId, PageRequest pageRequest) {
         assetService.getAsset(assetId);
-        return telemetryRecordRepository.findByAssetId(assetId, pageable).map(this::toResponse);
+        var result = telemetryRecordRepository.findByAssetId(assetId, pageRequest);
+        var content = result.content().stream().map(this::toResponse).toList();
+        return new PageResult<>(content, result.page(), result.size(), result.totalElements(), result.totalPages());
     }
 
     public TelemetryResponse getLatest(UUID assetId) {

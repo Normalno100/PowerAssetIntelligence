@@ -6,6 +6,8 @@ import com.powerassetintelligence.domain.model.AssetStatus;
 import com.powerassetintelligence.domain.model.Asset;
 import com.powerassetintelligence.domain.model.MaintenanceRecord;
 import com.powerassetintelligence.application.port.out.MaintenanceRepositoryPort;
+import com.powerassetintelligence.application.port.out.PageRequest;
+import com.powerassetintelligence.application.port.out.PageResult;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
@@ -48,12 +50,14 @@ public class MaintenanceService {
             asset.setStatus(AssetStatus.UNDER_MAINTENANCE);
         }
 
-        return toResponse(maintenanceRecordRepository.save(record, asset));
+        return toResponse(maintenanceRecordRepository.save(record));
     }
 
-    public Page<MaintenanceResponse> findByAsset(UUID assetId, Pageable pageable) {
+    public PageResult<MaintenanceResponse> findByAsset(UUID assetId, PageRequest pageRequest) {
         assetService.getAsset(assetId);
-        return maintenanceRecordRepository.findByAssetId(assetId, pageable).map(this::toResponse);
+        var result = maintenanceRecordRepository.findByAssetId(assetId, pageRequest);
+        var content = result.content().stream().map(this::toResponse).toList();
+        return new PageResult<>(content, result.page(), result.size(), result.totalElements(), result.totalPages());
     }
 
     private MaintenanceResponse toResponse(MaintenanceRecord record) {

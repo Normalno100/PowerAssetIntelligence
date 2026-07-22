@@ -1,6 +1,8 @@
 package com.powerassetintelligence.infrastructure.persistence.adapter;
 
 import com.powerassetintelligence.application.port.out.AssetRepositoryPort;
+import com.powerassetintelligence.application.port.out.PageRequest;
+import com.powerassetintelligence.application.port.out.PageResult;
 import com.powerassetintelligence.domain.model.Asset;
 import com.powerassetintelligence.domain.model.AssetCriticality;
 import com.powerassetintelligence.domain.model.AssetStatus;
@@ -11,7 +13,6 @@ import com.powerassetintelligence.infrastructure.persistence.repository.AssetRep
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -35,8 +36,9 @@ public class AssetPersistenceAdapter implements AssetRepositoryPort {
     }
 
     @Override public Optional<Asset> findById(UUID assetId) { return repository.findById(assetId).map(PersistenceMapper::toDomain); }
-    @Override public Page<Asset> search(AssetType type, AssetStatus status, AssetCriticality criticality, String location, Pageable pageable) {
-        return repository.search(type, status, criticality, location, pageable)
-                .map(entity -> PersistenceMapper.toDomain(entity));
+    @Override public PageResult<Asset> search(AssetType type, AssetStatus status, AssetCriticality criticality, String location, PageRequest pageRequest) {
+        var springPageable = PersistenceMapper.toSpringPageable(pageRequest);
+        Page<com.powerassetintelligence.infrastructure.persistence.entity.AssetEntity> result = repository.search(type, status, criticality, location, springPageable);
+        return PersistenceMapper.toPageResult(result, entity -> PersistenceMapper.toDomain(entity));
     }
 }
