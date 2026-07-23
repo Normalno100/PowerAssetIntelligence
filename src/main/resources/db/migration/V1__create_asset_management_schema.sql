@@ -22,6 +22,8 @@ create table assets (
     constraint chk_assets_service_life check (expected_service_life_years > 0)
 );
 
+alter table assets alter column location type varchar(512) using location::varchar;
+
 create table asset_technical_parameters (
     asset_id uuid not null,
     parameter_name varchar(128) not null,
