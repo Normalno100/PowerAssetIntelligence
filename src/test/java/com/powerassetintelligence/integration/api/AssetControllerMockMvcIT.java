@@ -6,9 +6,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.powerassetintelligence.infrastructure.web.dto.AssetCreateRequest;
 import com.powerassetintelligence.domain.model.AssetCriticality;
+import com.powerassetintelligence.domain.model.AssetStatus;
 import com.powerassetintelligence.domain.model.AssetType;
+import com.powerassetintelligence.infrastructure.web.dto.AssetCreateRequest;
 import com.powerassetintelligence.testsupport.BaseIntegrationTest;
 import java.time.LocalDate;
 import java.util.Map;
@@ -29,12 +30,12 @@ class AssetControllerMockMvcIT extends BaseIntegrationTest {
     @Test
     void createShouldReturn201AndBody() throws Exception {
         AssetCreateRequest request = new AssetCreateRequest(
-                "TRANSFORMER",
+                AssetType.TRANSFORMER,
                 "TX-999",
                 LocalDate.of(2020, 10, 10),
                 "Central",
                 "Siemens",
-                "HIGH",
+                AssetCriticality.HIGH,
                 35,
                 Map.of("phase", "3")
         );

@@ -5,12 +5,13 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.powerassetintelligence.application.dto.AssetCreateCommand;
 import com.powerassetintelligence.application.dto.AssetResponse;
-import com.powerassetintelligence.infrastructure.web.dto.AssetCreateRequest;
 import com.powerassetintelligence.application.service.AssetService;
-import com.powerassetintelligence.domain.model.AssetCriticality;
-import com.powerassetintelligence.domain.model.AssetType;
 import com.powerassetintelligence.domain.model.Asset;
+import com.powerassetintelligence.domain.model.AssetCriticality;
+import com.powerassetintelligence.domain.model.AssetStatus;
+import com.powerassetintelligence.domain.model.AssetType;
 import com.powerassetintelligence.application.port.out.AssetRepositoryPort;
 import java.time.LocalDate;
 import java.util.Map;
@@ -33,13 +34,13 @@ class AssetServiceTest {
 
     @Test
     void createShouldTrimFieldsAndPersistAsset() {
-        AssetCreateRequest request = new AssetCreateRequest(
-                "TRANSFORMER",
+        AssetCreateCommand command = new AssetCreateCommand(
+                AssetType.TRANSFORMER,
                 "  TX-101  ",
                 LocalDate.of(2022, 5, 3),
                 "  North substation  ",
                 "  ABB  ",
-                "HIGH",
+                AssetCriticality.HIGH,
                 30,
                 Map.of("kv", "110")
         );
@@ -47,7 +48,7 @@ class AssetServiceTest {
         when(assetRepository.save(org.mockito.ArgumentMatchers.any(Asset.class)))
                 .thenAnswer(inv -> inv.getArgument(0, Asset.class));
 
-        AssetResponse response = assetService.create(request);
+        AssetResponse response = assetService.create(command);
 
         assertEquals("TX-101", response.name());
         assertEquals("North substation", response.location());
@@ -60,7 +61,7 @@ class AssetServiceTest {
     void getByIdShouldReturnSavedAsset() {
         UUID id = UUID.randomUUID();
         Asset asset = new Asset(id, AssetType.CIRCUIT_BREAKER, "BRK-1", LocalDate.of(2021, 1, 1),
-                com.powerassetintelligence.domain.model.AssetStatus.ACTIVE,
+                AssetStatus.ACTIVE,
                 "Site-A", "GE", AssetCriticality.MEDIUM, 25, Map.of());
         when(assetRepository.findById(id)).thenReturn(Optional.of(asset));
 

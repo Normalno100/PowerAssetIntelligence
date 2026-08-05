@@ -1,14 +1,14 @@
 package com.powerassetintelligence.infrastructure.web.dto;
 
+import com.powerassetintelligence.domain.model.AssetType;
+import com.powerassetintelligence.domain.model.AssetCriticality;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import java.time.LocalDate;
 import java.util.Map;
 
 public record AssetCreateRequest(
-        @NotNull @Pattern(regexp = "TRANSFORMER|SUBSTATION|CIRCUIT_BREAKER|OVERHEAD_LINE|CABLE_LINE|SWITCHGEAR|SENSOR")
-        String type,
+        @NotNull AssetType type,
 
         @NotNull @Size(min = 1, max = 255)
         String name,
@@ -22,8 +22,7 @@ public record AssetCreateRequest(
         @NotNull @Size(max = 255)
         String manufacturer,
 
-        @NotNull @Pattern(regexp = "LOW|MEDIUM|HIGH|CRITICAL")
-        String criticality,
+        @NotNull AssetCriticality criticality,
 
         Integer expectedServiceLifeYears,
         Map<String, String> technicalParameters

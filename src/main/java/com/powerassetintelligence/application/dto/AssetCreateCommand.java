@@ -1,36 +1,18 @@
-package com.powerassetintelligence.infrastructure.web.dto;
+package com.powerassetintelligence.application.dto;
 
-import com.powerassetintelligence.domain.model.AssetStatus;
 import com.powerassetintelligence.domain.model.AssetType;
 import com.powerassetintelligence.domain.model.AssetCriticality;
-import jakarta.validation.constraints.Past;
-import jakarta.validation.constraints.Positive;
-import jakarta.validation.constraints.Size;
 import java.time.LocalDate;
 import java.util.Map;
 
-public record AssetUpdateRequest(
+public record AssetCreateCommand(
         AssetType type,
-
-        @Size(max = 255)
         String name,
-
-        @Past
         LocalDate installationDate,
-
-        AssetStatus status,
-
-        @Size(max = 255)
         String location,
-
-        @Size(max = 255)
         String manufacturer,
-
         AssetCriticality criticality,
-
-        @Positive
         Integer expectedServiceLifeYears,
-
         Map<String, String> technicalParameters
 ) {
 }

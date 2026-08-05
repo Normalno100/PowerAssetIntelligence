@@ -1,12 +1,12 @@
 package com.powerassetintelligence.application.service;
 
-import com.powerassetintelligence.infrastructure.web.dto.AssetCreateRequest;
+import com.powerassetintelligence.application.dto.AssetCreateCommand;
 import com.powerassetintelligence.application.dto.AssetResponse;
-import com.powerassetintelligence.infrastructure.web.dto.AssetUpdateRequest;
+import com.powerassetintelligence.application.dto.AssetUpdateCommand;
+import com.powerassetintelligence.domain.model.Asset;
 import com.powerassetintelligence.domain.model.AssetCriticality;
 import com.powerassetintelligence.domain.model.AssetStatus;
 import com.powerassetintelligence.domain.model.AssetType;
-import com.powerassetintelligence.domain.model.Asset;
 import com.powerassetintelligence.application.port.out.AssetRepositoryPort;
 import com.powerassetintelligence.application.port.out.PageRequest;
 import com.powerassetintelligence.application.port.out.PageResult;
@@ -28,18 +28,18 @@ public class AssetService {
     }
 
     @Transactional
-    public AssetResponse create(AssetCreateRequest request) {
+    public AssetResponse create(AssetCreateCommand command) {
         Asset asset = new Asset(
                 UUID.randomUUID(),
-                parseAssetType(request.type()),
-                request.name() != null ? request.name().trim() : null,
-                request.installationDate(),
+                command.type(),
+                command.name() != null ? command.name().trim() : null,
+                command.installationDate(),
                 AssetStatus.ACTIVE,
-                request.location() != null ? request.location().trim() : null,
-                request.manufacturer() != null ? request.manufacturer().trim() : null,
-                parseAssetCriticality(request.criticality()),
-                request.expectedServiceLifeYears(),
-                nullToEmpty(request.technicalParameters())
+                command.location() != null ? command.location().trim() : null,
+                command.manufacturer() != null ? command.manufacturer().trim() : null,
+                command.criticality(),
+                command.expectedServiceLifeYears(),
+                nullToEmpty(command.technicalParameters())
         );
         return toResponse(assetRepository.save(asset));
     }
@@ -61,35 +61,37 @@ public class AssetService {
     }
 
     @Transactional
-    public AssetResponse update(UUID assetId, AssetUpdateRequest request) {
+    public AssetResponse update(UUID assetId, AssetUpdateCommand command) {
         Asset asset = getAsset(assetId);
-        if (request.type() != null) {
-            asset.setType(parseAssetType(request.type()));
+
+        if (command.hasType()) {
+            asset.setType(command.type());
         }
-        if (request.name() != null) {
-            asset.setName(request.name().trim());
+        if (command.hasName()) {
+            asset.setName(command.trim(command.name()));
         }
-        if (request.installationDate() != null) {
-            asset.setInstallationDate(request.installationDate());
+        if (command.hasInstallationDate()) {
+            asset.setInstallationDate(command.installationDate());
         }
-        if (request.status() != null) {
-            asset.setStatus(parseAssetStatus(request.status()));
+        if (command.hasStatus()) {
+            asset.setStatus(command.status());
         }
-        if (request.location() != null) {
-            asset.setLocation(request.location().trim());
+        if (command.hasLocation()) {
+            asset.setLocation(command.trim(command.location()));
         }
-        if (request.manufacturer() != null) {
-            asset.setManufacturer(request.manufacturer().trim());
+        if (command.hasManufacturer()) {
+            asset.setManufacturer(command.trim(command.manufacturer()));
         }
-        if (request.criticality() != null) {
-            asset.setCriticality(parseAssetCriticality(request.criticality()));
+        if (command.hasCriticality()) {
+            asset.setCriticality(command.criticality());
         }
-        if (request.expectedServiceLifeYears() != null) {
-            asset.setExpectedServiceLifeYears(request.expectedServiceLifeYears());
+        if (command.hasExpectedServiceLifeYears()) {
+            asset.setExpectedServiceLifeYears(command.expectedServiceLifeYears());
         }
-        if (request.technicalParameters() != null) {
-            asset.setTechnicalParameters(request.technicalParameters());
+        if (command.hasTechnicalParameters()) {
+            asset.setTechnicalParameters(command.technicalParameters());
         }
+
         return toResponse(assetRepository.save(asset));
     }
 
@@ -129,17 +131,5 @@ public class AssetService {
 
     private String blankToNull(String value) {
         return value == null || value.isBlank() ? null : value;
-    }
-
-    private AssetType parseAssetType(String value) {
-        return AssetType.valueOf(value.toUpperCase());
-    }
-
-    private AssetCriticality parseAssetCriticality(String value) {
-        return AssetCriticality.valueOf(value.toUpperCase());
-    }
-
-    private AssetStatus parseAssetStatus(String value) {
-        return AssetStatus.valueOf(value.toUpperCase());
     }
 }
