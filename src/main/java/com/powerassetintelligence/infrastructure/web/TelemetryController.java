@@ -1,11 +1,11 @@
 package com.powerassetintelligence.infrastructure.web;
 
 import com.powerassetintelligence.application.dto.TelemetryAcceptedResponse;
-import com.powerassetintelligence.application.dto.TelemetryCreateRequest;
+import com.powerassetintelligence.application.dto.TelemetryCreateCommand;
 import com.powerassetintelligence.application.dto.TelemetryResponse;
 import com.powerassetintelligence.application.port.out.PageResult;
 import com.powerassetintelligence.application.service.TelemetryService;
-import com.powerassetintelligence.infrastructure.messaging.kafka.TelemetryKafkaProducer;
+import com.powerassetintelligence.infrastructure.web.dto.TelemetryCreateRequest;
 import jakarta.validation.Valid;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
@@ -18,23 +18,34 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import com.powerassetintelligence.infrastructure.web.WebPageMapper;
 
 @RestController
 @RequestMapping("/api/v1")
 public class TelemetryController {
 
     private final TelemetryService telemetryService;
-    private final TelemetryKafkaProducer telemetryKafkaProducer;
 
-    public TelemetryController(TelemetryService telemetryService, TelemetryKafkaProducer telemetryKafkaProducer) {
+    public TelemetryController(TelemetryService telemetryService) {
         this.telemetryService = telemetryService;
-        this.telemetryKafkaProducer = telemetryKafkaProducer;
     }
 
+    /**
+     * Accepts telemetry data from HTTP clients.
+     *
+     * Flow:
+     *   TelemetryCreateRequest (HTTP DTO)
+     *     → TelemetryWebMapper → TelemetryCreateCommand (Application)
+     *       → TelemetryService.ingest() → TelemetryEventPublisher (port)
+     *         → TelemetryKafkaProducer (adapter) → Kafka
+     *
+     * Returns 202 Accepted because telemetry is accepted for asynchronous processing.
+     * This does NOT mean telemetry is persisted to the database — persistence
+     * occurs later via the Kafka consumer pipeline.
+     */
     @PostMapping("/telemetry")
     public ResponseEntity<TelemetryAcceptedResponse> create(@Valid @RequestBody TelemetryCreateRequest request) {
-        TelemetryAcceptedResponse response = telemetryKafkaProducer.publish(request);
+        TelemetryCreateCommand command = TelemetryWebMapper.toCommand(request);
+        TelemetryAcceptedResponse response = telemetryService.ingest(command);
         return ResponseEntity.accepted().body(response);
     }
 

@@ -26,11 +26,6 @@ public class RiskAnalysisController {
         this.riskAnalysisService = riskAnalysisService;
     }
 
-    @GetMapping("/risk-analysis/{assetId}")
-    public RiskAssessmentDetailsResponse assessRisk(@PathVariable UUID assetId) {
-        return riskAnalysisService.assess(assetId);
-    }
-
     @PostMapping("/assets/{assetId}/risk-assessments")
     public RiskAssessmentDetailsResponse createAssessment(@PathVariable UUID assetId) {
         return riskAnalysisService.assess(assetId);

@@ -1,6 +1,6 @@
 package com.powerassetintelligence.infrastructure.messaging.kafka;
 
-import com.powerassetintelligence.application.dto.TelemetryCreateRequest;
+import com.powerassetintelligence.application.dto.TelemetryCreateCommand;
 import com.powerassetintelligence.application.dto.TelemetryResponse;
 import com.powerassetintelligence.application.service.TelemetryService;
 import com.powerassetintelligence.infrastructure.messaging.kafka.message.TelemetryMessage;
@@ -45,7 +45,8 @@ public class TelemetryKafkaConsumer {
         );
 
         validate(message);
-        TelemetryResponse response = telemetryService.persist(toRequest(message));
+        TelemetryCreateCommand command = toCommand(message);
+        TelemetryResponse response = telemetryService.persist(command);
         acknowledgment.acknowledge();
 
         log.info(
@@ -67,8 +68,8 @@ public class TelemetryKafkaConsumer {
         }
     }
 
-    private TelemetryCreateRequest toRequest(TelemetryMessage message) {
-        return new TelemetryCreateRequest(
+    private TelemetryCreateCommand toCommand(TelemetryMessage message) {
+        return new TelemetryCreateCommand(
                 message.assetId(),
                 message.timestamp(),
                 message.temperatureCelsius(),
