@@ -2,15 +2,15 @@ package com.powerassetintelligence.application.service;
 
 import com.powerassetintelligence.application.dto.RiskAssessmentDetailsResponse;
 import com.powerassetintelligence.application.dto.RiskAssessmentResponse;
-import com.powerassetintelligence.application.dto.RiskFeatures;
 import com.powerassetintelligence.application.dto.RiskFeaturesResponse;
-import com.powerassetintelligence.application.dto.RiskScoringResult;
-import com.powerassetintelligence.application.port.out.RiskScoringPort;
+import com.powerassetintelligence.application.port.out.RiskAssessmentRepositoryPort;
+import com.powerassetintelligence.core.ai.CoreRiskScoringPort;
+import com.powerassetintelligence.core.ai.RiskFeatures;
+import com.powerassetintelligence.core.ai.RiskScoringResult;
 import com.powerassetintelligence.domain.model.Asset;
 import com.powerassetintelligence.domain.model.RiskAssessment;
 import com.powerassetintelligence.domain.model.TelemetryRecord;
 import com.powerassetintelligence.application.port.out.MaintenanceRepositoryPort;
-import com.powerassetintelligence.application.port.out.RiskAssessmentRepositoryPort;
 import com.powerassetintelligence.application.port.out.TelemetryRepositoryPort;
 import com.powerassetintelligence.application.port.out.PageRequest;
 import com.powerassetintelligence.application.port.out.PageResult;
@@ -20,8 +20,6 @@ import java.time.LocalDate;
 import java.time.Period;
 import java.util.List;
 import java.util.UUID;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,7 +31,7 @@ public class RiskAnalysisService {
     private final TelemetryRepositoryPort telemetryRecordRepository;
     private final MaintenanceRepositoryPort maintenanceRecordRepository;
     private final RiskAssessmentRepositoryPort riskAssessmentRepository;
-    private final RiskScoringPort riskEngine;
+    private final CoreRiskScoringPort riskEngine;
     private final Clock clock;
 
     public RiskAnalysisService(
@@ -41,7 +39,7 @@ public class RiskAnalysisService {
             TelemetryRepositoryPort telemetryRecordRepository,
             MaintenanceRepositoryPort maintenanceRecordRepository,
             RiskAssessmentRepositoryPort riskAssessmentRepository,
-            RiskScoringPort riskEngine
+            CoreRiskScoringPort riskEngine
     ) {
         this.assetService = assetService;
         this.telemetryRecordRepository = telemetryRecordRepository;
@@ -54,8 +52,8 @@ public class RiskAnalysisService {
     @Transactional
     public RiskAssessmentDetailsResponse assess(UUID assetId) {
         Asset asset = assetService.getAsset(assetId);
-        var dtoFeatures = extractFeatures(asset);
-        var scoringResult = riskEngine.score(dtoFeatures);
+        var coreFeatures = extractFeatures(asset);
+        var scoringResult = riskEngine.score(coreFeatures);
         RiskAssessment assessment = new RiskAssessment(
                 UUID.randomUUID(),
                 asset.getId(),
@@ -69,7 +67,7 @@ public class RiskAnalysisService {
         );
         return new RiskAssessmentDetailsResponse(
                 toResponse(riskAssessmentRepository.save(assessment)),
-                toFeaturesResponse(dtoFeatures)
+                toFeaturesResponse(coreFeatures)
         );
     }
 

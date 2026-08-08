@@ -1,8 +1,0 @@
-package com.powerassetintelligence.application.port.out;
-
-import com.powerassetintelligence.application.dto.RiskFeatures;
-import com.powerassetintelligence.application.dto.RiskScoringResult;
-
-public interface RiskScoringPort {
-    RiskScoringResult score(RiskFeatures features);
-}

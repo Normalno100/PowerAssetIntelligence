@@ -3,7 +3,7 @@ package com.powerassetintelligence.integration.kafka;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.powerassetintelligence.application.dto.TelemetryAcceptedResponse;
-import com.powerassetintelligence.application.dto.TelemetryCreateRequest;
+import com.powerassetintelligence.application.dto.TelemetryCreateCommand;
 import com.powerassetintelligence.infrastructure.messaging.kafka.TelemetryKafkaProducer;
 import com.powerassetintelligence.testsupport.BaseIntegrationTest;
 import java.math.BigDecimal;
@@ -32,7 +32,7 @@ class TelemetryKafkaFlowIT extends BaseIntegrationTest {
     @Test
     void kafkaProducerShouldSendTelemetryMessageToEmbeddedTopic() {
         UUID assetId = UUID.randomUUID();
-        TelemetryCreateRequest request = new TelemetryCreateRequest(
+        TelemetryCreateCommand request = new TelemetryCreateCommand(
                 assetId,
                 Instant.now(),
                 BigDecimal.valueOf(75.0),

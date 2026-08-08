@@ -4,8 +4,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import com.powerassetintelligence.application.dto.RiskFeatures;
-import com.powerassetintelligence.application.dto.RiskScoringResult;
+import com.powerassetintelligence.core.ai.RiskFeatures;
+import com.powerassetintelligence.core.ai.RiskScoringResult;
 import com.powerassetintelligence.core.ai.RuleBasedRiskEngine;
 import com.powerassetintelligence.domain.model.AssetCriticality;
 import com.powerassetintelligence.domain.model.AssetStatus;
