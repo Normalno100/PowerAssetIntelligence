@@ -55,6 +55,17 @@ public class Asset {
     public void setInstallationDate(LocalDate installationDate) { this.installationDate = installationDate; }
     public AssetStatus getStatus() { return status; }
     public void setStatus(AssetStatus status) { this.status = status; }
+
+    /**
+     * Transitions the asset to UNDER_MAINTENANCE status.
+     * No-op if the asset is already DECOMMISSIONED.
+     */
+    public void startMaintenance() {
+        if (this.status != AssetStatus.DECOMMISSIONED) {
+            this.status = AssetStatus.UNDER_MAINTENANCE;
+        }
+    }
+
     public String getLocation() { return location; }
     public void setLocation(String location) { this.location = location; }
     public String getManufacturer() { return manufacturer; }

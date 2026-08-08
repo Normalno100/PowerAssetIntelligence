@@ -1,8 +1,8 @@
 package com.powerassetintelligence.infrastructure.web;
 
-import com.powerassetintelligence.application.dto.MaintenanceCreateRequest;
 import com.powerassetintelligence.application.dto.MaintenanceResponse;
 import com.powerassetintelligence.application.port.out.PageResult;
+import com.powerassetintelligence.infrastructure.web.dto.MaintenanceCreateRequest;
 import com.powerassetintelligence.application.service.MaintenanceService;
 import jakarta.validation.Valid;
 import java.net.URI;
@@ -17,7 +17,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import com.powerassetintelligence.infrastructure.web.WebPageMapper;
 
 @RestController
 @RequestMapping("/api/v1/assets/{assetId}/maintenance-records")
@@ -34,7 +33,7 @@ public class MaintenanceController {
             @PathVariable UUID assetId,
             @Valid @RequestBody MaintenanceCreateRequest request
     ) {
-        MaintenanceResponse response = maintenanceService.create(assetId, request);
+        MaintenanceResponse response = maintenanceService.create(assetId, MaintenanceWebMapper.toCreateCommand(request));
         return ResponseEntity.created(URI.create("/api/v1/assets/" + assetId + "/maintenance-records/" + response.id()))
                 .body(response);
     }
