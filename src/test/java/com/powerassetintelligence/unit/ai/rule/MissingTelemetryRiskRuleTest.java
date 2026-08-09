@@ -28,7 +28,7 @@ class MissingTelemetryRiskRuleTest {
                 BigDecimal.valueOf(70.0), // Has temperature
                 BigDecimal.valueOf(60.0),
                 1,
-                0L
+                0L, null, null, null, null, 0L
         );
 
         Optional<RiskRuleResult> result = rule.evaluate(features);
@@ -47,7 +47,7 @@ class MissingTelemetryRiskRuleTest {
                 null,
                 BigDecimal.valueOf(60.0), // Has load
                 null,
-                0L
+                0L, null, null, null, null, 0L
         );
 
         Optional<RiskRuleResult> result = rule.evaluate(features);
@@ -66,7 +66,7 @@ class MissingTelemetryRiskRuleTest {
                 null,
                 null,
                 1, // Has overheating
-                0L
+                0L, null, null, null, null, 0L
         );
 
         Optional<RiskRuleResult> result = rule.evaluate(features);
@@ -85,7 +85,7 @@ class MissingTelemetryRiskRuleTest {
                 null,
                 null,
                 null,
-                0L
+                0L, null, null, null, null, 0L
         );
 
         Optional<RiskRuleResult> result = rule.evaluate(features);

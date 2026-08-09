@@ -29,7 +29,7 @@ class HighLoadCoolingRiskRuleTest {
                 BigDecimal.valueOf(70.0),
                 BigDecimal.valueOf(95.0), // > 90%
                 3, // >= 3 overheating
-                0L
+                0L, null, null, null, null, 0L
         );
 
         Optional<RiskRuleResult> result = rule.evaluate(features);
@@ -50,7 +50,7 @@ class HighLoadCoolingRiskRuleTest {
                 BigDecimal.valueOf(70.0),
                 BigDecimal.valueOf(92.0), // > 90%
                 1, // < 3 overheating
-                0L
+                0L, null, null, null, null, 0L
         );
 
         Optional<RiskRuleResult> result = rule.evaluate(features);
@@ -71,7 +71,7 @@ class HighLoadCoolingRiskRuleTest {
                 BigDecimal.valueOf(70.0),
                 BigDecimal.valueOf(85.0), // <= 90%
                 3,
-                0L
+                0L, null, null, null, null, 0L
         );
 
         Optional<RiskRuleResult> result = rule.evaluate(features);
@@ -90,7 +90,7 @@ class HighLoadCoolingRiskRuleTest {
                 BigDecimal.valueOf(70.0),
                 null,
                 3,
-                0L
+                0L, null, null, null, null, 0L
         );
 
         Optional<RiskRuleResult> result = rule.evaluate(features);

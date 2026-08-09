@@ -1,6 +1,8 @@
 package com.powerassetintelligence.infrastructure.persistence.repository;
 
 import com.powerassetintelligence.infrastructure.persistence.entity.TelemetryRecord;
+import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
@@ -16,4 +18,6 @@ public interface TelemetryRecordRepository extends JpaRepository<TelemetryRecord
     boolean existsByExternalTelemetryId(String externalTelemetryId);
 
     Optional<TelemetryRecord> findByExternalTelemetryId(String externalTelemetryId);
+
+    List<TelemetryRecord> findByAssetIdAndTimestampBetween(UUID assetId, Instant from, Instant to);
 }

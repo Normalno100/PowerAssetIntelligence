@@ -28,7 +28,7 @@ class AgeRiskRuleTest {
                 BigDecimal.valueOf(70.0),
                 BigDecimal.valueOf(60.0),
                 0,
-                0L
+                0L, null, null, null, null, 0L
         );
 
         Optional<RiskRuleResult> result = rule.evaluate(features);
@@ -49,7 +49,7 @@ class AgeRiskRuleTest {
                 BigDecimal.valueOf(70.0),
                 BigDecimal.valueOf(60.0),
                 0,
-                0L
+                0L, null, null, null, null, 0L
         );
 
         Optional<RiskRuleResult> result = rule.evaluate(features);
@@ -70,7 +70,7 @@ class AgeRiskRuleTest {
                 BigDecimal.valueOf(70.0),
                 BigDecimal.valueOf(60.0),
                 0,
-                0L
+                0L, null, null, null, null, 0L
         );
 
         Optional<RiskRuleResult> result = rule.evaluate(features);

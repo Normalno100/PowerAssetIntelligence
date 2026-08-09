@@ -6,6 +6,8 @@ import com.powerassetintelligence.application.port.out.TelemetryRepositoryPort;
 import com.powerassetintelligence.domain.model.TelemetryRecord;
 import com.powerassetintelligence.infrastructure.persistence.mapper.PersistenceMapper;
 import com.powerassetintelligence.infrastructure.persistence.repository.TelemetryRecordRepository;
+import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.stereotype.Component;
@@ -28,4 +30,9 @@ public class TelemetryPersistenceAdapter implements TelemetryRepositoryPort {
                 result.getNumber(), result.getSize(), result.getTotalElements(), result.getTotalPages());
     }
     @Override public Optional<TelemetryRecord> findFirstByAssetIdOrderByTimestampDesc(UUID assetId) { return repository.findFirstByAssetIdOrderByTimestampDesc(assetId).map(PersistenceMapper::toDomain); }
+    @Override public List<TelemetryRecord> findByAssetIdAndTimestampRange(UUID assetId, Instant from, Instant to) {
+        return repository.findByAssetIdAndTimestampBetween(assetId, from, to).stream()
+                .map(PersistenceMapper::toDomain)
+                .toList();
+    }
 }

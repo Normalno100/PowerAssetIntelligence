@@ -6,6 +6,7 @@ import com.powerassetintelligence.core.ai.rule.HighLoadCoolingRiskRule;
 import com.powerassetintelligence.core.ai.rule.HighTemperatureRiskRule;
 import com.powerassetintelligence.core.ai.rule.MissingTelemetryRiskRule;
 import com.powerassetintelligence.core.ai.rule.RepairHistoryRiskRule;
+import com.powerassetintelligence.core.ai.rule.SustainedHighTemperatureRiskRule;
 import com.powerassetintelligence.domain.model.AssetCriticality;
 import com.powerassetintelligence.domain.model.RiskLevel;
 import java.math.BigDecimal;
@@ -28,6 +29,7 @@ public class RuleBasedRiskEngine implements CoreRiskScoringPort {
         this.rules = List.of(
                 new AgingOverheatRepairRiskRule(),
                 new HighTemperatureRiskRule(),
+                new SustainedHighTemperatureRiskRule(),
                 new HighLoadCoolingRiskRule(),
                 new AgeRiskRule(),
                 new RepairHistoryRiskRule(),

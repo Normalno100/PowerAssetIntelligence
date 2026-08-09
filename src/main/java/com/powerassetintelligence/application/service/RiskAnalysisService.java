@@ -9,15 +9,10 @@ import com.powerassetintelligence.core.ai.RiskFeatures;
 import com.powerassetintelligence.core.ai.RiskScoringResult;
 import com.powerassetintelligence.domain.model.Asset;
 import com.powerassetintelligence.domain.model.RiskAssessment;
-import com.powerassetintelligence.domain.model.TelemetryRecord;
-import com.powerassetintelligence.application.port.out.MaintenanceRepositoryPort;
-import com.powerassetintelligence.application.port.out.TelemetryRepositoryPort;
 import com.powerassetintelligence.application.port.out.PageRequest;
 import com.powerassetintelligence.application.port.out.PageResult;
 import java.time.Clock;
 import java.time.Instant;
-import java.time.LocalDate;
-import java.time.Period;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
@@ -28,32 +23,30 @@ import org.springframework.transaction.annotation.Transactional;
 public class RiskAnalysisService {
 
     private final AssetService assetService;
-    private final TelemetryRepositoryPort telemetryRecordRepository;
-    private final MaintenanceRepositoryPort maintenanceRecordRepository;
+    private final RiskFeaturesExtractor riskFeaturesExtractor;
     private final RiskAssessmentRepositoryPort riskAssessmentRepository;
     private final CoreRiskScoringPort riskEngine;
     private final Clock clock;
 
     public RiskAnalysisService(
             AssetService assetService,
-            TelemetryRepositoryPort telemetryRecordRepository,
-            MaintenanceRepositoryPort maintenanceRecordRepository,
+            RiskFeaturesExtractor riskFeaturesExtractor,
             RiskAssessmentRepositoryPort riskAssessmentRepository,
-            CoreRiskScoringPort riskEngine
+            CoreRiskScoringPort riskEngine,
+            Clock clock
     ) {
         this.assetService = assetService;
-        this.telemetryRecordRepository = telemetryRecordRepository;
-        this.maintenanceRecordRepository = maintenanceRecordRepository;
+        this.riskFeaturesExtractor = riskFeaturesExtractor;
         this.riskAssessmentRepository = riskAssessmentRepository;
         this.riskEngine = riskEngine;
-        this.clock = Clock.systemUTC();
+        this.clock = clock;
     }
 
     @Transactional
     public RiskAssessmentDetailsResponse assess(UUID assetId) {
         Asset asset = assetService.getAsset(assetId);
-        var coreFeatures = extractFeatures(asset);
-        var scoringResult = riskEngine.score(coreFeatures);
+        RiskFeatures features = riskFeaturesExtractor.extract(asset);
+        RiskScoringResult scoringResult = riskEngine.score(features);
         RiskAssessment assessment = new RiskAssessment(
                 UUID.randomUUID(),
                 asset.getId(),
@@ -67,7 +60,7 @@ public class RiskAnalysisService {
         );
         return new RiskAssessmentDetailsResponse(
                 toResponse(riskAssessmentRepository.save(assessment)),
-                toFeaturesResponse(coreFeatures)
+                toFeaturesResponse(features)
         );
     }
 
@@ -89,29 +82,6 @@ public class RiskAnalysisService {
         var result = riskAssessmentRepository.findAll(pageRequest);
         var content = result.content().stream().map(this::toResponse).toList();
         return new PageResult<>(content, result.page(), result.size(), result.totalElements(), result.totalPages());
-    }
-
-    private RiskFeatures extractFeatures(Asset asset) {
-        TelemetryRecord latestTelemetry = telemetryRecordRepository.findFirstByAssetIdOrderByTimestampDesc(asset.getId())
-                .orElse(null);
-        LocalDate today = LocalDate.now(clock);
-        long repairsLastYear = maintenanceRecordRepository.countByAssetIdAndRepairDateGreaterThanEqual(
-                asset.getId(),
-                today.minusYears(1)
-        );
-        int ageYears = Math.max(0, Period.between(asset.getInstallationDate(), today).getYears());
-
-        return new RiskFeatures(
-                asset.getId(),
-                asset.getType(),
-                asset.getStatus(),
-                asset.getCriticality(),
-                ageYears,
-                latestTelemetry == null ? null : latestTelemetry.temperatureCelsius(),
-                latestTelemetry == null ? null : latestTelemetry.loadPercent(),
-                latestTelemetry == null ? null : latestTelemetry.overheatingCount(),
-                repairsLastYear
-        );
     }
 
     private RiskAssessmentResponse toResponse(RiskAssessment assessment) {
@@ -139,7 +109,12 @@ public class RiskAnalysisService {
                 features.latestTemperatureCelsius(),
                 features.latestLoadPercent(),
                 features.latestOverheatingCount(),
-                features.repairsLastYear()
+                features.repairsLastYear(),
+                features.averageTemperatureCelsius(),
+                features.maxTemperatureCelsius(),
+                features.averageLoadPercent(),
+                features.maxLoadPercent(),
+                features.overheatingEventsLast24Hours()
         );
     }
 }

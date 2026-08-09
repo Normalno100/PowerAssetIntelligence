@@ -28,7 +28,7 @@ class HighTemperatureRiskRuleTest {
                 BigDecimal.valueOf(96.0), // >= 95°C
                 BigDecimal.valueOf(70.0),
                 1,
-                0L
+                0L, null, null, null, null, 0L
         );
 
         Optional<RiskRuleResult> result = rule.evaluate(features);
@@ -49,7 +49,7 @@ class HighTemperatureRiskRuleTest {
                 BigDecimal.valueOf(81.0), // > 80°C
                 BigDecimal.valueOf(70.0),
                 1,
-                0L
+                0L, null, null, null, null, 0L
         );
 
         Optional<RiskRuleResult> result = rule.evaluate(features);
@@ -70,7 +70,7 @@ class HighTemperatureRiskRuleTest {
                 BigDecimal.valueOf(80.0), // <= 80°C
                 BigDecimal.valueOf(70.0),
                 1,
-                0L
+                0L, null, null, null, null, 0L
         );
 
         Optional<RiskRuleResult> result = rule.evaluate(features);
@@ -89,7 +89,7 @@ class HighTemperatureRiskRuleTest {
                 null,
                 BigDecimal.valueOf(70.0),
                 1,
-                0L
+                0L, null, null, null, null, 0L
         );
 
         Optional<RiskRuleResult> result = rule.evaluate(features);

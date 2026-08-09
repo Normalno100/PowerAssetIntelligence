@@ -15,6 +15,12 @@ public record RiskFeaturesResponse(
         BigDecimal latestTemperatureCelsius,
         BigDecimal latestLoadPercent,
         Integer latestOverheatingCount,
-        long repairsLastYear
+        long repairsLastYear,
+        // Statistical features from the last 24 hours
+        BigDecimal averageTemperatureCelsius,
+        BigDecimal maxTemperatureCelsius,
+        BigDecimal averageLoadPercent,
+        BigDecimal maxLoadPercent,
+        long overheatingEventsLast24Hours
 ) {
 }

@@ -3,6 +3,7 @@ package com.powerassetintelligence.infrastructure.config;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.info.License;
+import java.time.Clock;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -17,5 +18,10 @@ public class OpenApiConfiguration {
                         .description("Production-ready REST API for electric grid asset management")
                         .version("v1")
                         .license(new License().name("Proprietary")));
+    }
+
+    @Bean
+    Clock clock() {
+        return Clock.systemUTC();
     }
 }
