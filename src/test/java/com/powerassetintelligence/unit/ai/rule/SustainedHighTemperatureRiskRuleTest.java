@@ -19,8 +19,6 @@ class SustainedHighTemperatureRiskRuleTest {
 
     @Test
     void evaluateShouldTriggerWithSeverePeak() {
-        // Test 1: latest=90, average=80, max=92
-        // Both sustained (>=85, >=75) AND peak (>=90) → score=15
         RiskFeatures features = new RiskFeatures(
                 java.util.UUID.randomUUID(),
                 AssetType.TRANSFORMER,
@@ -33,7 +31,7 @@ class SustainedHighTemperatureRiskRuleTest {
                 0L,
                 BigDecimal.valueOf(80.0),
                 BigDecimal.valueOf(92.0),
-                null, null, 0L
+                null, null, 0L, null, null
         );
 
         Optional<RiskRuleResult> result = rule.evaluate(features);
@@ -45,8 +43,6 @@ class SustainedHighTemperatureRiskRuleTest {
 
     @Test
     void evaluateShouldTriggerSustainedWithoutPeak() {
-        // Test 2: latest=86, average=76, max=88
-        // Sustained but no peak (max < 90) → score=12
         RiskFeatures features = new RiskFeatures(
                 java.util.UUID.randomUUID(),
                 AssetType.TRANSFORMER,
@@ -59,7 +55,7 @@ class SustainedHighTemperatureRiskRuleTest {
                 0L,
                 BigDecimal.valueOf(76.0),
                 BigDecimal.valueOf(88.0),
-                null, null, 0L
+                null, null, 0L, null, null
         );
 
         Optional<RiskRuleResult> result = rule.evaluate(features);
@@ -71,8 +67,6 @@ class SustainedHighTemperatureRiskRuleTest {
 
     @Test
     void evaluateShouldNotTriggerWithHighPeakButLowAverage() {
-        // Test 3: latest=90, average=70, max=95
-        // Peak >= 90 but average < 75 → sustained condition not met → empty
         RiskFeatures features = new RiskFeatures(
                 java.util.UUID.randomUUID(),
                 AssetType.TRANSFORMER,
@@ -85,7 +79,7 @@ class SustainedHighTemperatureRiskRuleTest {
                 0L,
                 BigDecimal.valueOf(70.0),
                 BigDecimal.valueOf(95.0),
-                null, null, 0L
+                null, null, 0L, null, null
         );
 
         Optional<RiskRuleResult> result = rule.evaluate(features);
@@ -95,8 +89,6 @@ class SustainedHighTemperatureRiskRuleTest {
 
     @Test
     void evaluateShouldNotTriggerBelowThresholds() {
-        // Test 4: latest=70, average=65, max=80
-        // All below thresholds → empty
         RiskFeatures features = new RiskFeatures(
                 java.util.UUID.randomUUID(),
                 AssetType.TRANSFORMER,
@@ -109,7 +101,7 @@ class SustainedHighTemperatureRiskRuleTest {
                 0L,
                 BigDecimal.valueOf(65.0),
                 BigDecimal.valueOf(80.0),
-                null, null, 0L
+                null, null, 0L, null, null
         );
 
         Optional<RiskRuleResult> result = rule.evaluate(features);
@@ -119,7 +111,6 @@ class SustainedHighTemperatureRiskRuleTest {
 
     @Test
     void evaluateShouldNotTriggerWhenTelemetryIsNull() {
-        // Test 5: all temperature fields are null → empty
         RiskFeatures features = new RiskFeatures(
                 java.util.UUID.randomUUID(),
                 AssetType.TRANSFORMER,
@@ -132,7 +123,7 @@ class SustainedHighTemperatureRiskRuleTest {
                 0L,
                 null,
                 null,
-                null, null, 0L
+                null, null, 0L, null, null
         );
 
         Optional<RiskRuleResult> result = rule.evaluate(features);
@@ -142,7 +133,6 @@ class SustainedHighTemperatureRiskRuleTest {
 
     @Test
     void evaluateShouldTriggerAtBoundaryThresholds() {
-        // Test 6: latest=85, average=75 — exactly at boundary
         RiskFeatures features = new RiskFeatures(
                 java.util.UUID.randomUUID(),
                 AssetType.TRANSFORMER,
@@ -155,7 +145,7 @@ class SustainedHighTemperatureRiskRuleTest {
                 0L,
                 BigDecimal.valueOf(75.0),
                 BigDecimal.valueOf(85.0),
-                null, null, 0L
+                null, null, 0L, null, null
         );
 
         Optional<RiskRuleResult> result = rule.evaluate(features);
@@ -167,7 +157,6 @@ class SustainedHighTemperatureRiskRuleTest {
 
     @Test
     void evaluateShouldNotTriggerJustBelowBoundaryThresholds() {
-        // Test 6b: latest=84, average=74 — just below boundary
         RiskFeatures features = new RiskFeatures(
                 java.util.UUID.randomUUID(),
                 AssetType.TRANSFORMER,
@@ -180,7 +169,7 @@ class SustainedHighTemperatureRiskRuleTest {
                 0L,
                 BigDecimal.valueOf(74.0),
                 BigDecimal.valueOf(84.0),
-                null, null, 0L
+                null, null, 0L, null, null
         );
 
         Optional<RiskRuleResult> result = rule.evaluate(features);
@@ -190,7 +179,6 @@ class SustainedHighTemperatureRiskRuleTest {
 
     @Test
     void evaluateShouldNotTriggerWhenOnlyLatestIsNull() {
-        // Edge case: average and max are present but latest is null
         RiskFeatures features = new RiskFeatures(
                 java.util.UUID.randomUUID(),
                 AssetType.TRANSFORMER,
@@ -203,7 +191,7 @@ class SustainedHighTemperatureRiskRuleTest {
                 0L,
                 BigDecimal.valueOf(80.0),
                 BigDecimal.valueOf(92.0),
-                null, null, 0L
+                null, null, 0L, null, null
         );
 
         Optional<RiskRuleResult> result = rule.evaluate(features);
@@ -213,7 +201,6 @@ class SustainedHighTemperatureRiskRuleTest {
 
     @Test
     void evaluateShouldNotTriggerWhenOnlyAverageIsNull() {
-        // Edge case: latest and max are present but average is null
         RiskFeatures features = new RiskFeatures(
                 java.util.UUID.randomUUID(),
                 AssetType.TRANSFORMER,
@@ -226,7 +213,7 @@ class SustainedHighTemperatureRiskRuleTest {
                 0L,
                 null,
                 BigDecimal.valueOf(92.0),
-                null, null, 0L
+                null, null, 0L, null, null
         );
 
         Optional<RiskRuleResult> result = rule.evaluate(features);
@@ -236,7 +223,6 @@ class SustainedHighTemperatureRiskRuleTest {
 
     @Test
     void evaluateShouldHandleSeverePeakWhenMaxIsNull() {
-        // Edge case: sustained condition met but max is null
         RiskFeatures features = new RiskFeatures(
                 java.util.UUID.randomUUID(),
                 AssetType.TRANSFORMER,
@@ -249,7 +235,7 @@ class SustainedHighTemperatureRiskRuleTest {
                 0L,
                 BigDecimal.valueOf(80.0),
                 null,
-                null, null, 0L
+                null, null, 0L, null, null
         );
 
         Optional<RiskRuleResult> result = rule.evaluate(features);

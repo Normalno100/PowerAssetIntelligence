@@ -29,7 +29,7 @@ class AgingOverheatRepairRiskRuleTest {
                 BigDecimal.valueOf(85.0), // > 80°C
                 BigDecimal.valueOf(70.0),
                 1,
-                5L, null, null, null, null, 0L // > 3 repairs
+                5L, null, null, null, null, 0L, null, null // > 3 repairs
         );
 
         Optional<RiskRuleResult> result = rule.evaluate(features);
@@ -51,7 +51,7 @@ class AgingOverheatRepairRiskRuleTest {
                 BigDecimal.valueOf(85.0),
                 BigDecimal.valueOf(70.0),
                 1,
-                5L, null, null, null, null, 0L
+                5L, null, null, null, null, 0L, null, null
         );
 
         Optional<RiskRuleResult> result = rule.evaluate(features);
@@ -70,7 +70,7 @@ class AgingOverheatRepairRiskRuleTest {
                 BigDecimal.valueOf(75.0), // <= 80°C
                 BigDecimal.valueOf(70.0),
                 1,
-                5L, null, null, null, null, 0L
+                5L, null, null, null, null, 0L, null, null
         );
 
         Optional<RiskRuleResult> result = rule.evaluate(features);
@@ -89,7 +89,7 @@ class AgingOverheatRepairRiskRuleTest {
                 BigDecimal.valueOf(85.0),
                 BigDecimal.valueOf(70.0),
                 1,
-                2L, null, null, null, null, 0L // <= 3 repairs
+                2L, null, null, null, null, 0L, null, null // <= 3 repairs
         );
 
         Optional<RiskRuleResult> result = rule.evaluate(features);

@@ -28,7 +28,7 @@ class RepairHistoryRiskRuleTest {
                 BigDecimal.valueOf(70.0),
                 BigDecimal.valueOf(60.0),
                 0,
-                5L, null, null, null, null, 0L // > 3 repairs
+                5L, null, null, null, null, 0L, null, null // > 3 repairs
         );
 
         Optional<RiskRuleResult> result = rule.evaluate(features);
@@ -49,7 +49,7 @@ class RepairHistoryRiskRuleTest {
                 BigDecimal.valueOf(70.0),
                 BigDecimal.valueOf(60.0),
                 0,
-                2L, null, null, null, null, 0L // >= 2 repairs
+                2L, null, null, null, null, 0L, null, null // >= 2 repairs
         );
 
         Optional<RiskRuleResult> result = rule.evaluate(features);
@@ -70,7 +70,7 @@ class RepairHistoryRiskRuleTest {
                 BigDecimal.valueOf(70.0),
                 BigDecimal.valueOf(60.0),
                 0,
-                1L, null, null, null, null, 0L // <= 1 repair
+                1L, null, null, null, null, 0L, null, null // <= 1 repair
         );
 
         Optional<RiskRuleResult> result = rule.evaluate(features);

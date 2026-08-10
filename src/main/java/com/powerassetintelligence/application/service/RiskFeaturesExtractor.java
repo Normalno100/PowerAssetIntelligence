@@ -8,10 +8,12 @@ import com.powerassetintelligence.domain.model.TelemetryRecord;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.Clock;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.Period;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -28,6 +30,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class RiskFeaturesExtractor {
 
     private static final int HOURS_WINDOW = 24;
+    private static final int MINIMUM_DATA_POINTS_FOR_TREND = 2;
 
     private final TelemetryRepositoryPort telemetryRepository;
     private final MaintenanceRepositoryPort maintenanceRepository;
@@ -69,6 +72,12 @@ public class RiskFeaturesExtractor {
         BigDecimal maxLoad = maxNonNull(telemetry24h, TelemetryRecord::loadPercent);
         long overheatingEvents = sumNonZeroOverheating(telemetry24h);
 
+        // Temporal trends (computed independently)
+        BigDecimal temperatureTrend = computeTrendPerHour(
+                telemetry24h, TelemetryRecord::timestamp, TelemetryRecord::temperatureCelsius);
+        BigDecimal loadTrend = computeTrendPerHour(
+                telemetry24h, TelemetryRecord::timestamp, TelemetryRecord::loadPercent);
+
         return new RiskFeatures(
                 asset.getId(),
                 asset.getType(),
@@ -83,8 +92,65 @@ public class RiskFeaturesExtractor {
                 maxTemp,
                 averageLoad,
                 maxLoad,
-                overheatingEvents
+                overheatingEvents,
+                temperatureTrend,
+                loadTrend
         );
+    }
+
+    /**
+     * Computes the slope (delta per hour) for a given numeric field over telemetry records.
+     * Uses real timestamps to determine the time delta.
+     *
+     * <p>Null values are filtered out independently — a null in one field does not
+     * affect the calculation for another field.
+     *
+     * @return slope in units per hour, or {@code null} if fewer than 2 valid data points
+     */
+    private BigDecimal computeTrendPerHour(
+            List<TelemetryRecord> records,
+            java.util.function.Function<TelemetryRecord, Instant> timestampExtractor,
+            java.util.function.Function<TelemetryRecord, BigDecimal> valueExtractor
+    ) {
+        // Extract non-null (timestamp, value) pairs
+        List<Measurement> measurements = new ArrayList<>();
+        for (TelemetryRecord record : records) {
+            Instant ts = timestampExtractor.apply(record);
+            BigDecimal value = valueExtractor.apply(record);
+            if (ts != null && value != null) {
+                measurements.add(new Measurement(ts, value));
+            }
+        }
+
+        // Need at least 2 data points to compute a trend
+        if (measurements.size() < MINIMUM_DATA_POINTS_FOR_TREND) {
+            return null;
+        }
+
+        // Sort by timestamp to ensure correct first/last
+        measurements.sort(java.util.Comparator.comparing(Measurement::timestamp));
+
+        BigDecimal valueDelta = measurements.get(measurements.size() - 1).value()
+                .subtract(measurements.get(0).value());
+
+        Duration duration = Duration.between(
+                measurements.get(0).timestamp(),
+                measurements.get(measurements.size() - 1).timestamp()
+        );
+
+        long durationHours = duration.toHours();
+        long durationMinutes = duration.toMinutes();
+
+        // Avoid division by zero — if all measurements have the same timestamp, return 0
+        if (durationMinutes == 0) {
+            return BigDecimal.ZERO;
+        }
+
+        // Convert duration to hours as a fraction for precision
+        BigDecimal hours = BigDecimal.valueOf(durationMinutes).divide(
+                BigDecimal.valueOf(60), 4, RoundingMode.HALF_UP);
+
+        return valueDelta.divide(hours, 4, RoundingMode.HALF_UP);
     }
 
     private BigDecimal averageNonNull(
@@ -130,5 +196,11 @@ public class RiskFeaturesExtractor {
                 .filter(v -> v > 0)
                 .mapToLong(Integer::intValue)
                 .sum();
+    }
+
+    /**
+     * Internal helper to store a timestamp-value pair for trend calculation.
+     */
+    private record Measurement(Instant timestamp, BigDecimal value) {
     }
 }

@@ -21,7 +21,9 @@ public record RiskFeatures(
         BigDecimal maxTemperatureCelsius,
         BigDecimal averageLoadPercent,
         BigDecimal maxLoadPercent,
-        long overheatingEventsLast24Hours
+        long overheatingEventsLast24Hours,
+        BigDecimal temperatureTrendCelsiusPerHour,
+        BigDecimal loadTrendPercentPerHour
 ) {
 
     public boolean hasTelemetry() {

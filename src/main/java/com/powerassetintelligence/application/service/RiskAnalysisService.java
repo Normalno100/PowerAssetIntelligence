@@ -114,7 +114,9 @@ public class RiskAnalysisService {
                 features.maxTemperatureCelsius(),
                 features.averageLoadPercent(),
                 features.maxLoadPercent(),
-                features.overheatingEventsLast24Hours()
+                features.overheatingEventsLast24Hours(),
+                features.temperatureTrendCelsiusPerHour(),
+                features.loadTrendPercentPerHour()
         );
     }
 }
