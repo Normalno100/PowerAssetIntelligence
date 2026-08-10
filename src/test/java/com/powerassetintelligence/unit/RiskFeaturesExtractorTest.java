@@ -295,4 +295,235 @@ class RiskFeaturesExtractorTest {
         assertThat(result1.repairsLastYear()).isEqualTo(5L);
         assertThat(result1.assetAgeYears()).isEqualTo(15);
     }
+
+    // ===== Test 7: Positive temperature trend =====
+    @Test
+    @DisplayName("Test 7 — positive temperature trend: 10:00=60°C, 12:00=70°C → +5°C/hour")
+    void shouldCalculatePositiveTemperatureTrend() {
+        Asset asset = createAsset();
+        Instant t1 = FIXED_NOW.minus(14, java.time.temporal.ChronoUnit.HOURS);
+        Instant t2 = FIXED_NOW.minus(12, java.time.temporal.ChronoUnit.HOURS);
+
+        TelemetryRecord r1 = telemetry(
+                new BigDecimal("60"), new BigDecimal("50"), 0, t1);
+        TelemetryRecord r2 = telemetry(
+                new BigDecimal("70"), new BigDecimal("55"), 0, t2);
+
+        when(telemetryRepository.findFirstByAssetIdOrderByTimestampDesc(TEST_ASSET_ID))
+                .thenReturn(Optional.of(r2));
+        when(telemetryRepository.findByAssetIdAndTimestampRange(TEST_ASSET_ID, FROM_24H_AGO, FIXED_NOW))
+                .thenReturn(List.of(r1, r2));
+        when(maintenanceRepository.countByAssetIdAndRepairDateGreaterThanEqual(TEST_ASSET_ID, LocalDate.of(2024, 6, 15)))
+                .thenReturn(0L);
+
+        RiskFeatures features = extractor.extract(asset);
+
+        assertThat(features.temperatureTrendCelsiusPerHour())
+                .isNotNull()
+                .isEqualByComparingTo(new BigDecimal("5.0000"));
+    }
+
+    // ===== Test 8: Negative temperature trend =====
+    @Test
+    @DisplayName("Test 8 — negative temperature trend: 10:00=80°C, 12:00=70°C → -5°C/hour")
+    void shouldCalculateNegativeTemperatureTrend() {
+        Asset asset = createAsset();
+        Instant t1 = FIXED_NOW.minus(14, java.time.temporal.ChronoUnit.HOURS);
+        Instant t2 = FIXED_NOW.minus(12, java.time.temporal.ChronoUnit.HOURS);
+
+        TelemetryRecord r1 = telemetry(
+                new BigDecimal("80"), new BigDecimal("50"), 0, t1);
+        TelemetryRecord r2 = telemetry(
+                new BigDecimal("70"), new BigDecimal("55"), 0, t2);
+
+        when(telemetryRepository.findFirstByAssetIdOrderByTimestampDesc(TEST_ASSET_ID))
+                .thenReturn(Optional.of(r2));
+        when(telemetryRepository.findByAssetIdAndTimestampRange(TEST_ASSET_ID, FROM_24H_AGO, FIXED_NOW))
+                .thenReturn(List.of(r1, r2));
+        when(maintenanceRepository.countByAssetIdAndRepairDateGreaterThanEqual(TEST_ASSET_ID, LocalDate.of(2024, 6, 15)))
+                .thenReturn(0L);
+
+        RiskFeatures features = extractor.extract(asset);
+
+        assertThat(features.temperatureTrendCelsiusPerHour())
+                .isNotNull()
+                .isEqualByComparingTo(new BigDecimal("-5.0000"));
+    }
+
+    // ===== Test 9: Stable temperature (zero trend) =====
+    @Test
+    @DisplayName("Test 9 — stable temperature: 10:00=70°C, 12:00=70°C → 0")
+    void shouldCalculateZeroTrendForStableTemperature() {
+        Asset asset = createAsset();
+        Instant t1 = FIXED_NOW.minus(14, java.time.temporal.ChronoUnit.HOURS);
+        Instant t2 = FIXED_NOW.minus(12, java.time.temporal.ChronoUnit.HOURS);
+
+        TelemetryRecord r1 = telemetry(
+                new BigDecimal("70"), new BigDecimal("50"), 0, t1);
+        TelemetryRecord r2 = telemetry(
+                new BigDecimal("70"), new BigDecimal("55"), 0, t2);
+
+        when(telemetryRepository.findFirstByAssetIdOrderByTimestampDesc(TEST_ASSET_ID))
+                .thenReturn(Optional.of(r2));
+        when(telemetryRepository.findByAssetIdAndTimestampRange(TEST_ASSET_ID, FROM_24H_AGO, FIXED_NOW))
+                .thenReturn(List.of(r1, r2));
+        when(maintenanceRepository.countByAssetIdAndRepairDateGreaterThanEqual(TEST_ASSET_ID, LocalDate.of(2024, 6, 15)))
+                .thenReturn(0L);
+
+        RiskFeatures features = extractor.extract(asset);
+
+        assertThat(features.temperatureTrendCelsiusPerHour())
+                .isNotNull()
+                .isEqualByComparingTo(BigDecimal.ZERO);
+    }
+
+    // ===== Test 10: Insufficient data (single record) =====
+    @Test
+    @DisplayName("Test 10 — insufficient data: 1 record → null")
+    void shouldReturnNullTrendForInsufficientData() {
+        Asset asset = createAsset();
+        Instant ts = FIXED_NOW.minus(6, java.time.temporal.ChronoUnit.HOURS);
+
+        TelemetryRecord record = telemetry(
+                new BigDecimal("75"), new BigDecimal("60"), 1, ts);
+
+        when(telemetryRepository.findFirstByAssetIdOrderByTimestampDesc(TEST_ASSET_ID))
+                .thenReturn(Optional.of(record));
+        when(telemetryRepository.findByAssetIdAndTimestampRange(TEST_ASSET_ID, FROM_24H_AGO, FIXED_NOW))
+                .thenReturn(List.of(record));
+        when(maintenanceRepository.countByAssetIdAndRepairDateGreaterThanEqual(TEST_ASSET_ID, LocalDate.of(2024, 6, 15)))
+                .thenReturn(0L);
+
+        RiskFeatures features = extractor.extract(asset);
+
+        assertThat(features.temperatureTrendCelsiusPerHour()).isNull();
+        assertThat(features.loadTrendPercentPerHour()).isNull();
+    }
+
+    // ===== Test 11: Null values — independent calculation (temperature has data, load all null) =====
+    @Test
+    @DisplayName("Test 11 — null values: temperature has data, load all null → tempTrend≠null, loadTrend=null")
+    void shouldCalculateTemperatureTrendWhenLoadIsNull() {
+        Asset asset = createAsset();
+        Instant t1 = FIXED_NOW.minus(14, java.time.temporal.ChronoUnit.HOURS);
+        Instant t2 = FIXED_NOW.minus(12, java.time.temporal.ChronoUnit.HOURS);
+
+        TelemetryRecord r1 = telemetry(
+                new BigDecimal("65"), null, 0, t1);
+        TelemetryRecord r2 = telemetry(
+                new BigDecimal("75"), null, 0, t2);
+
+        when(telemetryRepository.findFirstByAssetIdOrderByTimestampDesc(TEST_ASSET_ID))
+                .thenReturn(Optional.of(r2));
+        when(telemetryRepository.findByAssetIdAndTimestampRange(TEST_ASSET_ID, FROM_24H_AGO, FIXED_NOW))
+                .thenReturn(List.of(r1, r2));
+        when(maintenanceRepository.countByAssetIdAndRepairDateGreaterThanEqual(TEST_ASSET_ID, LocalDate.of(2024, 6, 15)))
+                .thenReturn(0L);
+
+        RiskFeatures features = extractor.extract(asset);
+
+        assertThat(features.temperatureTrendCelsiusPerHour())
+                .isNotNull()
+                .isEqualByComparingTo(new BigDecimal("5.0000"));
+        assertThat(features.loadTrendPercentPerHour()).isNull();
+    }
+
+    // ===== Test 12: Null values — partial null load =====
+    @Test
+    @DisplayName("Test 12 — partial null load: some records have load, some don't → loadTrend calculated from valid records only")
+    void shouldCalculateLoadTrendWithPartialNulls() {
+        Asset asset = createAsset();
+        Instant t1 = FIXED_NOW.minus(14, java.time.temporal.ChronoUnit.HOURS);
+        Instant t2 = FIXED_NOW.minus(12, java.time.temporal.ChronoUnit.HOURS);
+        Instant t3 = FIXED_NOW.minus(10, java.time.temporal.ChronoUnit.HOURS);
+
+        // t1: load=null, t2: load=50, t3: load=60
+        TelemetryRecord r1 = telemetry(
+                new BigDecimal("60"), null, 0, t1);
+        TelemetryRecord r2 = telemetry(
+                new BigDecimal("65"), new BigDecimal("50"), 0, t2);
+        TelemetryRecord r3 = telemetry(
+                new BigDecimal("70"), new BigDecimal("60"), 0, t3);
+
+        when(telemetryRepository.findFirstByAssetIdOrderByTimestampDesc(TEST_ASSET_ID))
+                .thenReturn(Optional.of(r3));
+        when(telemetryRepository.findByAssetIdAndTimestampRange(TEST_ASSET_ID, FROM_24H_AGO, FIXED_NOW))
+                .thenReturn(List.of(r1, r2, r3));
+        when(maintenanceRepository.countByAssetIdAndRepairDateGreaterThanEqual(TEST_ASSET_ID, LocalDate.of(2024, 6, 15)))
+                .thenReturn(0L);
+
+        RiskFeatures features = extractor.extract(asset);
+
+        // Temperature: (70-60) / 4h = +2.5
+        assertThat(features.temperatureTrendCelsiusPerHour())
+                .isNotNull()
+                .isEqualByComparingTo(new BigDecimal("2.5000"));
+        // Load: valid values at t2(50) and t3(60), delta=10, duration=2h → +5.0
+        assertThat(features.loadTrendPercentPerHour())
+                .isNotNull()
+                .isEqualByComparingTo(new BigDecimal("5.0000"));
+    }
+
+    // ===== Test 13: Irregular timestamps =====
+    @Test
+    @DisplayName("Test 13 — irregular timestamps: 10:00→11:00→14:00 → correct delta/hour using real time")
+    void shouldHandleIrregularTimestamps() {
+        Asset asset = createAsset();
+        // 10:00 (now-14h), 11:00 (now-13h), 14:00 (now-10h)
+        Instant t1 = FIXED_NOW.minus(14, java.time.temporal.ChronoUnit.HOURS);
+        Instant t2 = FIXED_NOW.minus(13, java.time.temporal.ChronoUnit.HOURS);
+        Instant t3 = FIXED_NOW.minus(10, java.time.temporal.ChronoUnit.HOURS);
+
+        TelemetryRecord r1 = telemetry(
+                new BigDecimal("60"), new BigDecimal("50"), 0, t1);
+        TelemetryRecord r2 = telemetry(
+                new BigDecimal("63"), new BigDecimal("52"), 0, t2);
+        TelemetryRecord r3 = telemetry(
+                new BigDecimal("72"), new BigDecimal("58"), 0, t3);
+
+        when(telemetryRepository.findFirstByAssetIdOrderByTimestampDesc(TEST_ASSET_ID))
+                .thenReturn(Optional.of(r3));
+        when(telemetryRepository.findByAssetIdAndTimestampRange(TEST_ASSET_ID, FROM_24H_AGO, FIXED_NOW))
+                .thenReturn(List.of(r1, r2, r3));
+        when(maintenanceRepository.countByAssetIdAndRepairDateGreaterThanEqual(TEST_ASSET_ID, LocalDate.of(2024, 6, 15)))
+                .thenReturn(0L);
+
+        RiskFeatures features = extractor.extract(asset);
+
+        // Temperature: first=60 at t1, last=72 at t3, duration=4h → (72-60)/4 = +3.0
+        assertThat(features.temperatureTrendCelsiusPerHour())
+                .isNotNull()
+                .isEqualByComparingTo(new BigDecimal("3.0000"));
+        // Load: first=50 at t1, last=58 at t3, duration=4h → (58-50)/4 = +2.0
+        assertThat(features.loadTrendPercentPerHour())
+                .isNotNull()
+                .isEqualByComparingTo(new BigDecimal("2.0000"));
+    }
+
+    // ===== Test 14: Load trend positive =====
+    @Test
+    @DisplayName("Test 14 — positive load trend: 10:00=50%, 14:00=70% → +5%/hour")
+    void shouldCalculatePositiveLoadTrend() {
+        Asset asset = createAsset();
+        Instant t1 = FIXED_NOW.minus(14, java.time.temporal.ChronoUnit.HOURS);
+        Instant t2 = FIXED_NOW.minus(10, java.time.temporal.ChronoUnit.HOURS);
+
+        TelemetryRecord r1 = telemetry(
+                new BigDecimal("65"), new BigDecimal("50"), 0, t1);
+        TelemetryRecord r2 = telemetry(
+                new BigDecimal("70"), new BigDecimal("70"), 0, t2);
+
+        when(telemetryRepository.findFirstByAssetIdOrderByTimestampDesc(TEST_ASSET_ID))
+                .thenReturn(Optional.of(r2));
+        when(telemetryRepository.findByAssetIdAndTimestampRange(TEST_ASSET_ID, FROM_24H_AGO, FIXED_NOW))
+                .thenReturn(List.of(r1, r2));
+        when(maintenanceRepository.countByAssetIdAndRepairDateGreaterThanEqual(TEST_ASSET_ID, LocalDate.of(2024, 6, 15)))
+                .thenReturn(0L);
+
+        RiskFeatures features = extractor.extract(asset);
+
+        assertThat(features.loadTrendPercentPerHour())
+                .isNotNull()
+                .isEqualByComparingTo(new BigDecimal("5.0000"));
+    }
 }

@@ -12,7 +12,7 @@ public record RiskAssessmentResponse(
         Instant assessedAt,
         BigDecimal riskScore,
         RiskLevel riskLevel,
-        List<String> riskFactors,
+        List<RiskFactorResponse> riskFactors,
         List<String> recommendations,
         String modelVersion,
         String explanation,

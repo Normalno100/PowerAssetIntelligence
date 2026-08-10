@@ -8,7 +8,7 @@ import org.springframework.boot.test.context.SpringBootTest;
         "spring.datasource.driver-class-name=org.h2.Driver",
         "spring.datasource.username=sa",
         "spring.datasource.password=",
-        "spring.jpa.hibernate.ddl-auto=validate",
+        "spring.jpa.hibernate.ddl-auto=update",
         "spring.kafka.bootstrap-servers=localhost:19092",
         "spring.kafka.admin.auto-create=false",
         "spring.kafka.listener.auto-startup=false"

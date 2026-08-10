@@ -87,10 +87,12 @@ public class TemperatureTrendRiskRule implements RiskRule {
         }
 
         // Find the highest severity level that matches
+        // (SEVERITY_LEVELS are ordered from highest to lowest, so break on first match)
         Level matchedLevel = null;
         for (Level level : SEVERITY_LEVELS) {
             if (trend.compareTo(level.minTrend) >= 0 && latestTemp.compareTo(level.minLatestTemp) >= 0) {
                 matchedLevel = level;
+                break;
             }
         }
 

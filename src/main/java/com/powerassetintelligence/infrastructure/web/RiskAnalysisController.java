@@ -1,9 +1,11 @@
 package com.powerassetintelligence.infrastructure.web;
 
+import com.powerassetintelligence.application.dto.RiskAssessmentComparisonResponse;
 import com.powerassetintelligence.application.dto.RiskAssessmentDetailsResponse;
 import com.powerassetintelligence.application.dto.RiskAssessmentResponse;
 import com.powerassetintelligence.application.port.out.PageResult;
 import com.powerassetintelligence.application.service.RiskAnalysisService;
+import com.powerassetintelligence.application.service.RiskAssessmentComparisonService;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -21,9 +23,14 @@ import com.powerassetintelligence.infrastructure.web.WebPageMapper;
 public class RiskAnalysisController {
 
     private final RiskAnalysisService riskAnalysisService;
+    private final RiskAssessmentComparisonService comparisonService;
 
-    public RiskAnalysisController(RiskAnalysisService riskAnalysisService) {
+    public RiskAnalysisController(
+            RiskAnalysisService riskAnalysisService,
+            RiskAssessmentComparisonService comparisonService
+    ) {
         this.riskAnalysisService = riskAnalysisService;
+        this.comparisonService = comparisonService;
     }
 
     @PostMapping("/assets/{assetId}/risk-assessments")
@@ -34,6 +41,11 @@ public class RiskAnalysisController {
     @GetMapping("/assets/{assetId}/risk-assessments/latest")
     public RiskAssessmentResponse getLatest(@PathVariable UUID assetId) {
         return riskAnalysisService.getLatest(assetId);
+    }
+
+    @GetMapping("/assets/{assetId}/risk-assessments/latest/comparison")
+    public RiskAssessmentComparisonResponse getLatestComparison(@PathVariable UUID assetId) {
+        return comparisonService.compareLatest(assetId);
     }
 
     @GetMapping("/assets/{assetId}/risk-assessments")

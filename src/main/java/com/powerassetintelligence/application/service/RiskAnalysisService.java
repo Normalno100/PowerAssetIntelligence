@@ -2,16 +2,16 @@ package com.powerassetintelligence.application.service;
 
 import com.powerassetintelligence.application.dto.RiskAssessmentDetailsResponse;
 import com.powerassetintelligence.application.dto.RiskAssessmentResponse;
+import com.powerassetintelligence.application.dto.RiskFactorResponse;
 import com.powerassetintelligence.application.dto.RiskFeaturesResponse;
+import com.powerassetintelligence.application.port.out.PageRequest;
+import com.powerassetintelligence.application.port.out.PageResult;
 import com.powerassetintelligence.application.port.out.RiskAssessmentRepositoryPort;
 import com.powerassetintelligence.core.ai.CoreRiskScoringPort;
 import com.powerassetintelligence.core.ai.RiskFeatures;
 import com.powerassetintelligence.core.ai.RiskScoringResult;
 import com.powerassetintelligence.domain.model.Asset;
 import com.powerassetintelligence.domain.model.RiskAssessment;
-import com.powerassetintelligence.application.port.out.PageRequest;
-import com.powerassetintelligence.application.port.out.PageResult;
-import java.time.Clock;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
@@ -26,14 +26,14 @@ public class RiskAnalysisService {
     private final RiskFeaturesExtractor riskFeaturesExtractor;
     private final RiskAssessmentRepositoryPort riskAssessmentRepository;
     private final CoreRiskScoringPort riskEngine;
-    private final Clock clock;
+    private final java.time.Clock clock;
 
     public RiskAnalysisService(
             AssetService assetService,
             RiskFeaturesExtractor riskFeaturesExtractor,
             RiskAssessmentRepositoryPort riskAssessmentRepository,
             CoreRiskScoringPort riskEngine,
-            Clock clock
+            java.time.Clock clock
     ) {
         this.assetService = assetService;
         this.riskFeaturesExtractor = riskFeaturesExtractor;
@@ -53,7 +53,7 @@ public class RiskAnalysisService {
                 Instant.now(clock),
                 scoringResult.riskScore(),
                 scoringResult.riskLevel(),
-                scoringResult.riskFactors(),
+                scoringResult.structuredRiskFactors(),
                 scoringResult.recommendations(),
                 scoringResult.modelVersion(),
                 scoringResult.explanation()
@@ -91,8 +91,10 @@ public class RiskAnalysisService {
                 assessment.assessedAt(),
                 assessment.riskScore(),
                 assessment.riskLevel(),
-                List.copyOf(assessment.riskFactors()),
-                List.copyOf(assessment.recommendations()),
+                assessment.riskFactors().stream()
+                        .map(RiskFactorResponse::from)
+                        .toList(),
+                assessment.recommendations(),
                 assessment.modelVersion(),
                 assessment.explanation(),
                 assessment.createdAt()

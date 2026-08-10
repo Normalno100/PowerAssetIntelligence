@@ -1,5 +1,6 @@
 package com.powerassetintelligence.core.ai.rule;
 
+import com.powerassetintelligence.core.ai.RiskFactor;
 import com.powerassetintelligence.core.ai.RiskFeatures;
 import com.powerassetintelligence.core.ai.RiskRule;
 import com.powerassetintelligence.core.ai.RiskRuleResult;
@@ -54,10 +55,20 @@ public class SustainedHighTemperatureRiskRule implements RiskRule {
                     "Inspect cooling system and thermal conditions");
         }
 
+        RiskFactor factor = RiskFactor.of(
+                "SUSTAINED_HIGH_TEMPERATURE",
+                "TEMPERATURE",
+                severePeak ? "Severe sustained high temperature peak detected" : "Sustained high temperature over 24h",
+                latest,
+                SUSTAINED_THRESHOLD_LATEST,
+                "CELSIUS"
+        );
+
         return Optional.of(RiskRuleResult.of(
                 "SUSTAINED_HIGH_TEMPERATURE",
                 score,
                 riskFactor,
-                recommendations));
+                recommendations,
+                factor));
     }
 }

@@ -55,9 +55,13 @@ public class RuleBasedRiskEngine implements CoreRiskScoringPort {
 
         Set<String> recommendations = new LinkedHashSet<>();
         List<String> riskFactors = new ArrayList<>();
+        List<RiskFactor> structuredRiskFactors = new ArrayList<>();
         for (RiskRuleResult result : matchedRules) {
             riskFactors.add(result.ruleCode() + ": " + result.riskFactor());
             recommendations.addAll(result.recommendations());
+            if (result.structuredRiskFactor() != null) {
+                structuredRiskFactors.add(result.structuredRiskFactor());
+            }
         }
         addLevelRecommendation(level, recommendations);
 
@@ -73,6 +77,7 @@ public class RuleBasedRiskEngine implements CoreRiskScoringPort {
                 score,
                 level,
                 List.copyOf(riskFactors),
+                List.copyOf(structuredRiskFactors),
                 List.copyOf(recommendations),
                 buildExplanation(features, matchedRules.size(), criticalityBonus),
                 MODEL_VERSION

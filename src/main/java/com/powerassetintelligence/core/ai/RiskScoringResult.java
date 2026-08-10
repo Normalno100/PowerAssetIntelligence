@@ -8,6 +8,7 @@ public record RiskScoringResult(
         BigDecimal riskScore,
         RiskLevel riskLevel,
         List<String> riskFactors,
+        List<RiskFactor> structuredRiskFactors,
         List<String> recommendations,
         String explanation,
         String modelVersion

@@ -1,8 +1,10 @@
 package com.powerassetintelligence.infrastructure.persistence.entity;
 
 import com.powerassetintelligence.domain.model.RiskLevel;
+import com.powerassetintelligence.infrastructure.persistence.converter.RiskFactorConverter;
 import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
 import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -20,6 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import com.powerassetintelligence.infrastructure.persistence.entity.AssetEntity;
+import com.powerassetintelligence.core.ai.RiskFactor;
 
 @Entity
 @Table(
@@ -49,10 +52,9 @@ public class RiskAssessment {
     @Column(name = "risk_level", nullable = false, length = 32)
     private RiskLevel riskLevel;
 
-    @ElementCollection(fetch = FetchType.LAZY)
-    @CollectionTable(name = "risk_assessment_factors", joinColumns = @JoinColumn(name = "risk_assessment_id"))
-    @Column(name = "factor", nullable = false, length = 1_000)
-    private List<String> riskFactors = new ArrayList<>();
+    @Column(name = "risk_factors_json", nullable = false, columnDefinition = "TEXT")
+    @Convert(converter = RiskFactorConverter.class)
+    private List<RiskFactor> riskFactors = new ArrayList<>();
 
     @ElementCollection(fetch = FetchType.LAZY)
     @CollectionTable(name = "risk_assessment_recommendations", joinColumns = @JoinColumn(name = "risk_assessment_id"))
@@ -77,7 +79,7 @@ public class RiskAssessment {
             Instant assessedAt,
             BigDecimal riskScore,
             RiskLevel riskLevel,
-            List<String> riskFactors,
+            List<RiskFactor> riskFactors,
             List<String> recommendations,
             String modelVersion,
             String explanation
@@ -118,7 +120,7 @@ public class RiskAssessment {
         return riskLevel;
     }
 
-    public List<String> getRiskFactors() {
+    public List<RiskFactor> getRiskFactors() {
         return riskFactors;
     }
 
