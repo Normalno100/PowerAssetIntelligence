@@ -1,6 +1,7 @@
 package com.powerassetintelligence.infrastructure.persistence.repository;
 
 import com.powerassetintelligence.infrastructure.persistence.entity.RiskAssessment;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
@@ -14,4 +15,6 @@ public interface RiskAssessmentRepository extends JpaRepository<RiskAssessment, 
     Optional<RiskAssessment> findFirstByAssetIdOrderByAssessedAtDesc(UUID assetId);
 
     Optional<RiskAssessment> findFirstByAssetIdOrderByAssessedAtAsc(UUID assetId);
+
+    List<RiskAssessment> findByAssetIdOrderByAssessedAtAsc(UUID assetId);
 }

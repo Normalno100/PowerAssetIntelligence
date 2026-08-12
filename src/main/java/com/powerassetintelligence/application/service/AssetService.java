@@ -102,7 +102,7 @@ public class AssetService {
         return toResponse(assetRepository.save(asset));
     }
 
-    Asset getAsset(UUID assetId) {
+    public Asset getAsset(UUID assetId) {
         return assetRepository.findById(assetId)
                 .orElseThrow(() -> new ResourceNotFoundException("Asset not found: " + assetId));
     }

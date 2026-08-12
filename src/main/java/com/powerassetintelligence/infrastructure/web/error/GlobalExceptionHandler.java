@@ -9,10 +9,14 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.kafka.KafkaException;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolationException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.HandlerMethodValidationException;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -53,6 +57,39 @@ public class GlobalExceptionHandler {
                 .map(this::formatFieldError)
                 .toList();
         problemDetail.setProperty("errors", errors);
+        return ResponseEntity.badRequest().body(problemDetail);
+    }
+
+    @ExceptionHandler(ConstraintViolationException.class)
+    ResponseEntity<ProblemDetail> handleConstraintViolation(ConstraintViolationException exception, HttpServletRequest request) {
+        String message = exception.getConstraintViolations().stream()
+                .map(ConstraintViolation::getMessage)
+                .findFirst()
+                .orElse("Validation failed");
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, message);
+        problemDetail.setTitle("Invalid query parameter");
+        problemDetail.setInstance(URI.create(request.getRequestURI()));
+        return ResponseEntity.badRequest().body(problemDetail);
+    }
+
+    @ExceptionHandler(HandlerMethodValidationException.class)
+    ResponseEntity<ProblemDetail> handleHandlerMethodValidation(HandlerMethodValidationException exception, HttpServletRequest request) {
+        String message = exception.getMessage();
+        if (message == null || message.isEmpty()) {
+            message = "Validation failed";
+        }
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, message);
+        problemDetail.setTitle("Invalid query parameter");
+        problemDetail.setInstance(URI.create(request.getRequestURI()));
+        return ResponseEntity.badRequest().body(problemDetail);
+    }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    ResponseEntity<ProblemDetail> handleTypeMismatch(MethodArgumentTypeMismatchException exception, HttpServletRequest request) {
+        String message = String.format("Invalid value '%s' for parameter '%s'", exception.getValue(), exception.getName());
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, message);
+        problemDetail.setTitle("Invalid query parameter");
+        problemDetail.setInstance(URI.create(request.getRequestURI()));
         return ResponseEntity.badRequest().body(problemDetail);
     }
 

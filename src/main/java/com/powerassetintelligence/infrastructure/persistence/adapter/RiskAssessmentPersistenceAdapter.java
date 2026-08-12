@@ -8,6 +8,7 @@ import com.powerassetintelligence.infrastructure.persistence.entity.RiskAssessme
 import com.powerassetintelligence.infrastructure.persistence.mapper.PersistenceMapper;
 import com.powerassetintelligence.infrastructure.persistence.repository.AssetRepository;
 import com.powerassetintelligence.infrastructure.persistence.repository.RiskAssessmentRepository;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.stereotype.Component;
@@ -77,5 +78,13 @@ public class RiskAssessmentPersistenceAdapter implements RiskAssessmentRepositor
         return new PageResult<>(
                 result.getContent().stream().map(PersistenceMapper::toDomain).toList(),
                 result.getNumber(), result.getSize(), result.getTotalElements(), result.getTotalPages());
+    }
+
+    @Override
+    public List<com.powerassetintelligence.domain.model.RiskAssessment> findByAssetIdOrderByAssessedAtAsc(UUID assetId) {
+        return riskAssessmentRepository.findByAssetIdOrderByAssessedAtAsc(assetId)
+                .stream()
+                .map(PersistenceMapper::toDomain)
+                .toList();
     }
 }
