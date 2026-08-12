@@ -14,6 +14,7 @@ import com.powerassetintelligence.application.service.AssetService;
 import com.powerassetintelligence.application.service.ResourceNotFoundException;
 import com.powerassetintelligence.application.service.RiskHistoryService;
 import com.powerassetintelligence.core.ai.RiskFactor;
+import com.powerassetintelligence.core.ai.RiskFactorSeverity;
 import com.powerassetintelligence.core.ai.TrendDirection;
 import com.powerassetintelligence.domain.model.RiskAssessment;
 import com.powerassetintelligence.domain.model.RiskLevel;
@@ -343,11 +344,9 @@ class RiskHistoryServiceTest {
         UUID id = UUID.randomUUID();
         RiskFactor factor = RiskFactor.of(
                 "AGE_FACTOR",
-                "AGE",
+                RiskFactorSeverity.MEDIUM,
                 "Asset age factor",
-                BigDecimal.valueOf(score),
-                BigDecimal.valueOf(50),
-                "SCORE"
+                BigDecimal.valueOf(score)
         );
         return new RiskAssessment(
                 id,
@@ -366,11 +365,9 @@ class RiskHistoryServiceTest {
         UUID id = UUID.randomUUID();
         RiskFactor factor = RiskFactor.of(
                 "AGE_FACTOR",
-                "AGE",
+                RiskFactorSeverity.MEDIUM,
                 "Asset age factor",
-                BigDecimal.valueOf(score),
-                BigDecimal.valueOf(50),
-                "SCORE"
+                BigDecimal.valueOf(score)
         );
         return new RiskAssessment(
                 id,

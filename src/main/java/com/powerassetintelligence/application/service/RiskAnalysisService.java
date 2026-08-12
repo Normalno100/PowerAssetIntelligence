@@ -53,7 +53,7 @@ public class RiskAnalysisService {
                 Instant.now(clock),
                 scoringResult.riskScore(),
                 scoringResult.riskLevel(),
-                scoringResult.structuredRiskFactors(),
+                scoringResult.riskFactors(),
                 scoringResult.recommendations(),
                 scoringResult.modelVersion(),
                 scoringResult.explanation()

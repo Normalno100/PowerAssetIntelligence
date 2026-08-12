@@ -1,8 +1,11 @@
 package com.powerassetintelligence.unit.ai.rule;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.powerassetintelligence.core.ai.RiskFactor;
+import com.powerassetintelligence.core.ai.RiskFactorSeverity;
 import com.powerassetintelligence.core.ai.RiskFeatures;
 import com.powerassetintelligence.core.ai.RiskRuleResult;
 import com.powerassetintelligence.core.ai.rule.HighTemperatureRiskRule;
@@ -35,7 +38,9 @@ class HighTemperatureRiskRuleTest {
 
         assertTrue(result.isPresent());
         assertEquals("CRITICAL_TEMPERATURE", result.get().ruleCode());
-        assertEquals(BigDecimal.valueOf(35), result.get().scoreContribution());
+        RiskFactor factor = result.get().riskFactor();
+        assertEquals(BigDecimal.valueOf(35), factor.contribution());
+        assertEquals(RiskFactorSeverity.CRITICAL, factor.severity());
     }
 
     @Test
@@ -56,7 +61,9 @@ class HighTemperatureRiskRuleTest {
 
         assertTrue(result.isPresent());
         assertEquals("HIGH_TEMPERATURE", result.get().ruleCode());
-        assertEquals(BigDecimal.valueOf(20), result.get().scoreContribution());
+        RiskFactor factor = result.get().riskFactor();
+        assertEquals(BigDecimal.valueOf(20), factor.contribution());
+        assertEquals(RiskFactorSeverity.HIGH, factor.severity());
     }
 
     @Test

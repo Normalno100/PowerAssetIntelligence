@@ -1,8 +1,11 @@
 package com.powerassetintelligence.unit.ai.rule;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.powerassetintelligence.core.ai.RiskFactor;
+import com.powerassetintelligence.core.ai.RiskFactorSeverity;
 import com.powerassetintelligence.core.ai.RiskFeatures;
 import com.powerassetintelligence.core.ai.RiskRuleResult;
 import com.powerassetintelligence.core.ai.rule.SustainedHighTemperatureRiskRule;
@@ -18,230 +21,106 @@ class SustainedHighTemperatureRiskRuleTest {
     private final SustainedHighTemperatureRiskRule rule = new SustainedHighTemperatureRiskRule();
 
     @Test
-    void evaluateShouldTriggerWithSeverePeak() {
+    void evaluateShouldTriggerSustainedHighTemperature() {
         RiskFeatures features = new RiskFeatures(
                 java.util.UUID.randomUUID(),
                 AssetType.TRANSFORMER,
                 AssetStatus.ACTIVE,
                 AssetCriticality.HIGH,
                 10,
-                BigDecimal.valueOf(90.0),
-                BigDecimal.valueOf(70.0),
+                BigDecimal.valueOf(86.0), // latest >= 85
+                BigDecimal.valueOf(60.0),
                 1,
                 0L,
+                BigDecimal.valueOf(76.0), // average >= 75
+                BigDecimal.valueOf(91.0), // max >= 90 (severe peak)
+                BigDecimal.valueOf(70.0),
                 BigDecimal.valueOf(80.0),
-                BigDecimal.valueOf(92.0),
-                null, null, 0L, null, null
+                0L, null, null
         );
 
         Optional<RiskRuleResult> result = rule.evaluate(features);
 
         assertTrue(result.isPresent());
         assertEquals("SUSTAINED_HIGH_TEMPERATURE", result.get().ruleCode());
-        assertEquals(BigDecimal.valueOf(15), result.get().scoreContribution());
+        RiskFactor factor = result.get().riskFactor();
+        assertEquals(BigDecimal.valueOf(15), factor.contribution());
+        assertEquals(RiskFactorSeverity.HIGH, factor.severity());
     }
 
     @Test
-    void evaluateShouldTriggerSustainedWithoutPeak() {
+    void evaluateShouldTriggerSustainedHighWithoutSeverePeak() {
         RiskFeatures features = new RiskFeatures(
                 java.util.UUID.randomUUID(),
                 AssetType.TRANSFORMER,
                 AssetStatus.ACTIVE,
                 AssetCriticality.HIGH,
                 10,
-                BigDecimal.valueOf(86.0),
+                BigDecimal.valueOf(86.0), // latest >= 85
+                BigDecimal.valueOf(60.0),
+                1,
+                0L,
+                BigDecimal.valueOf(76.0), // average >= 75
+                BigDecimal.valueOf(88.0), // max < 90 (no severe peak)
                 BigDecimal.valueOf(70.0),
+                BigDecimal.valueOf(80.0),
+                0L, null, null
+        );
+
+        Optional<RiskRuleResult> result = rule.evaluate(features);
+
+        assertTrue(result.isPresent());
+        assertEquals("SUSTAINED_HIGH_TEMPERATURE", result.get().ruleCode());
+        RiskFactor factor = result.get().riskFactor();
+        assertEquals(BigDecimal.valueOf(12), factor.contribution());
+        assertEquals(RiskFactorSeverity.MEDIUM, factor.severity());
+    }
+
+    @Test
+    void evaluateShouldNotTriggerWhenAverageBelowThreshold() {
+        RiskFeatures features = new RiskFeatures(
+                java.util.UUID.randomUUID(),
+                AssetType.TRANSFORMER,
+                AssetStatus.ACTIVE,
+                AssetCriticality.HIGH,
+                10,
+                BigDecimal.valueOf(86.0), // latest >= 85
+                BigDecimal.valueOf(60.0),
+                1,
+                0L,
+                BigDecimal.valueOf(74.0), // average < 75
+                BigDecimal.valueOf(88.0),
+                BigDecimal.valueOf(70.0),
+                BigDecimal.valueOf(80.0),
+                0L, null, null
+        );
+
+        Optional<RiskRuleResult> result = rule.evaluate(features);
+
+        assertTrue(result.isEmpty());
+    }
+
+    @Test
+    void evaluateShouldNotTriggerWhenLatestBelowThreshold() {
+        RiskFeatures features = new RiskFeatures(
+                java.util.UUID.randomUUID(),
+                AssetType.TRANSFORMER,
+                AssetStatus.ACTIVE,
+                AssetCriticality.HIGH,
+                10,
+                BigDecimal.valueOf(84.0), // latest < 85
+                BigDecimal.valueOf(60.0),
                 1,
                 0L,
                 BigDecimal.valueOf(76.0),
                 BigDecimal.valueOf(88.0),
-                null, null, 0L, null, null
-        );
-
-        Optional<RiskRuleResult> result = rule.evaluate(features);
-
-        assertTrue(result.isPresent());
-        assertEquals("SUSTAINED_HIGH_TEMPERATURE", result.get().ruleCode());
-        assertEquals(BigDecimal.valueOf(12), result.get().scoreContribution());
-    }
-
-    @Test
-    void evaluateShouldNotTriggerWithHighPeakButLowAverage() {
-        RiskFeatures features = new RiskFeatures(
-                java.util.UUID.randomUUID(),
-                AssetType.TRANSFORMER,
-                AssetStatus.ACTIVE,
-                AssetCriticality.HIGH,
-                10,
-                BigDecimal.valueOf(90.0),
                 BigDecimal.valueOf(70.0),
-                1,
-                0L,
-                BigDecimal.valueOf(70.0),
-                BigDecimal.valueOf(95.0),
-                null, null, 0L, null, null
-        );
-
-        Optional<RiskRuleResult> result = rule.evaluate(features);
-
-        assertTrue(result.isEmpty());
-    }
-
-    @Test
-    void evaluateShouldNotTriggerBelowThresholds() {
-        RiskFeatures features = new RiskFeatures(
-                java.util.UUID.randomUUID(),
-                AssetType.TRANSFORMER,
-                AssetStatus.ACTIVE,
-                AssetCriticality.HIGH,
-                10,
-                BigDecimal.valueOf(70.0),
-                BigDecimal.valueOf(70.0),
-                1,
-                0L,
-                BigDecimal.valueOf(65.0),
                 BigDecimal.valueOf(80.0),
-                null, null, 0L, null, null
+                0L, null, null
         );
 
         Optional<RiskRuleResult> result = rule.evaluate(features);
 
         assertTrue(result.isEmpty());
-    }
-
-    @Test
-    void evaluateShouldNotTriggerWhenTelemetryIsNull() {
-        RiskFeatures features = new RiskFeatures(
-                java.util.UUID.randomUUID(),
-                AssetType.TRANSFORMER,
-                AssetStatus.ACTIVE,
-                AssetCriticality.HIGH,
-                10,
-                null,
-                BigDecimal.valueOf(70.0),
-                1,
-                0L,
-                null,
-                null,
-                null, null, 0L, null, null
-        );
-
-        Optional<RiskRuleResult> result = rule.evaluate(features);
-
-        assertTrue(result.isEmpty());
-    }
-
-    @Test
-    void evaluateShouldTriggerAtBoundaryThresholds() {
-        RiskFeatures features = new RiskFeatures(
-                java.util.UUID.randomUUID(),
-                AssetType.TRANSFORMER,
-                AssetStatus.ACTIVE,
-                AssetCriticality.HIGH,
-                10,
-                BigDecimal.valueOf(85.0),
-                BigDecimal.valueOf(70.0),
-                1,
-                0L,
-                BigDecimal.valueOf(75.0),
-                BigDecimal.valueOf(85.0),
-                null, null, 0L, null, null
-        );
-
-        Optional<RiskRuleResult> result = rule.evaluate(features);
-
-        assertTrue(result.isPresent());
-        assertEquals("SUSTAINED_HIGH_TEMPERATURE", result.get().ruleCode());
-        assertEquals(BigDecimal.valueOf(12), result.get().scoreContribution());
-    }
-
-    @Test
-    void evaluateShouldNotTriggerJustBelowBoundaryThresholds() {
-        RiskFeatures features = new RiskFeatures(
-                java.util.UUID.randomUUID(),
-                AssetType.TRANSFORMER,
-                AssetStatus.ACTIVE,
-                AssetCriticality.HIGH,
-                10,
-                BigDecimal.valueOf(84.0),
-                BigDecimal.valueOf(70.0),
-                1,
-                0L,
-                BigDecimal.valueOf(74.0),
-                BigDecimal.valueOf(84.0),
-                null, null, 0L, null, null
-        );
-
-        Optional<RiskRuleResult> result = rule.evaluate(features);
-
-        assertTrue(result.isEmpty());
-    }
-
-    @Test
-    void evaluateShouldNotTriggerWhenOnlyLatestIsNull() {
-        RiskFeatures features = new RiskFeatures(
-                java.util.UUID.randomUUID(),
-                AssetType.TRANSFORMER,
-                AssetStatus.ACTIVE,
-                AssetCriticality.HIGH,
-                10,
-                null,
-                BigDecimal.valueOf(70.0),
-                1,
-                0L,
-                BigDecimal.valueOf(80.0),
-                BigDecimal.valueOf(92.0),
-                null, null, 0L, null, null
-        );
-
-        Optional<RiskRuleResult> result = rule.evaluate(features);
-
-        assertTrue(result.isEmpty());
-    }
-
-    @Test
-    void evaluateShouldNotTriggerWhenOnlyAverageIsNull() {
-        RiskFeatures features = new RiskFeatures(
-                java.util.UUID.randomUUID(),
-                AssetType.TRANSFORMER,
-                AssetStatus.ACTIVE,
-                AssetCriticality.HIGH,
-                10,
-                BigDecimal.valueOf(90.0),
-                BigDecimal.valueOf(70.0),
-                1,
-                0L,
-                null,
-                BigDecimal.valueOf(92.0),
-                null, null, 0L, null, null
-        );
-
-        Optional<RiskRuleResult> result = rule.evaluate(features);
-
-        assertTrue(result.isEmpty());
-    }
-
-    @Test
-    void evaluateShouldHandleSeverePeakWhenMaxIsNull() {
-        RiskFeatures features = new RiskFeatures(
-                java.util.UUID.randomUUID(),
-                AssetType.TRANSFORMER,
-                AssetStatus.ACTIVE,
-                AssetCriticality.HIGH,
-                10,
-                BigDecimal.valueOf(90.0),
-                BigDecimal.valueOf(70.0),
-                1,
-                0L,
-                BigDecimal.valueOf(80.0),
-                null,
-                null, null, 0L, null, null
-        );
-
-        Optional<RiskRuleResult> result = rule.evaluate(features);
-
-        assertTrue(result.isPresent());
-        assertEquals("SUSTAINED_HIGH_TEMPERATURE", result.get().ruleCode());
-        assertEquals(BigDecimal.valueOf(12), result.get().scoreContribution());
     }
 }

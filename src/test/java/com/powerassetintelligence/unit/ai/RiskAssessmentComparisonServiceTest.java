@@ -8,6 +8,7 @@ import com.powerassetintelligence.application.port.out.RiskAssessmentRepositoryP
 import com.powerassetintelligence.application.service.RiskAssessmentComparisonService;
 import com.powerassetintelligence.core.ai.RiskChangeDirection;
 import com.powerassetintelligence.core.ai.RiskFactor;
+import com.powerassetintelligence.core.ai.RiskFactorSeverity;
 import com.powerassetintelligence.domain.model.RiskAssessment;
 import com.powerassetintelligence.domain.model.RiskLevel;
 import java.math.BigDecimal;
@@ -115,14 +116,14 @@ class RiskAssessmentComparisonServiceTest {
 
     @Test
     void compareShouldDetectAppearedFactor() {
-        RiskFactor prevTemp = RiskFactor.of("TEMP_HIGH", "TEMPERATURE", "High temp",
-                BigDecimal.valueOf(82), BigDecimal.valueOf(80), "CELSIUS");
+        RiskFactor prevTemp = RiskFactor.of("TEMP_HIGH", RiskFactorSeverity.HIGH, "High temp",
+                BigDecimal.valueOf(20));
         RiskAssessment previous = createAssessment(60, RiskLevel.MEDIUM, List.of(prevTemp));
 
-        RiskFactor currTemp = RiskFactor.of("TEMP_HIGH", "TEMPERATURE", "High temp",
-                BigDecimal.valueOf(91), BigDecimal.valueOf(80), "CELSIUS");
-        RiskFactor currLoad = RiskFactor.of("LOAD_HIGH", "LOAD", "High load",
-                BigDecimal.valueOf(87), BigDecimal.valueOf(80), "PERCENT");
+        RiskFactor currTemp = RiskFactor.of("TEMP_HIGH", RiskFactorSeverity.CRITICAL, "High temp",
+                BigDecimal.valueOf(25));
+        RiskFactor currLoad = RiskFactor.of("LOAD_HIGH", RiskFactorSeverity.MEDIUM, "High load",
+                BigDecimal.valueOf(15));
         RiskAssessment current = createAssessment(75, RiskLevel.HIGH, List.of(currTemp, currLoad));
 
         setupRepository(previous, current);
@@ -137,14 +138,14 @@ class RiskAssessmentComparisonServiceTest {
 
     @Test
     void compareShouldDetectDisappearedFactor() {
-        RiskFactor prevTemp = RiskFactor.of("TEMP_HIGH", "TEMPERATURE", "High temp",
-                BigDecimal.valueOf(82), BigDecimal.valueOf(80), "CELSIUS");
-        RiskFactor prevLoad = RiskFactor.of("LOAD_HIGH", "LOAD", "High load",
-                BigDecimal.valueOf(87), BigDecimal.valueOf(80), "PERCENT");
+        RiskFactor prevTemp = RiskFactor.of("TEMP_HIGH", RiskFactorSeverity.HIGH, "High temp",
+                BigDecimal.valueOf(20));
+        RiskFactor prevLoad = RiskFactor.of("LOAD_HIGH", RiskFactorSeverity.MEDIUM, "High load",
+                BigDecimal.valueOf(15));
         RiskAssessment previous = createAssessment(60, RiskLevel.MEDIUM, List.of(prevTemp, prevLoad));
 
-        RiskFactor currTemp = RiskFactor.of("TEMP_HIGH", "TEMPERATURE", "High temp",
-                BigDecimal.valueOf(91), BigDecimal.valueOf(80), "CELSIUS");
+        RiskFactor currTemp = RiskFactor.of("TEMP_HIGH", RiskFactorSeverity.CRITICAL, "High temp",
+                BigDecimal.valueOf(25));
         RiskAssessment current = createAssessment(75, RiskLevel.HIGH, List.of(currTemp));
 
         setupRepository(previous, current);
@@ -159,10 +160,10 @@ class RiskAssessmentComparisonServiceTest {
 
     @Test
     void compareShouldDetectFactorValueChanged() {
-        RiskFactor prevFactor = RiskFactor.of("TEMP_HIGH", "TEMPERATURE", "High temp",
-                BigDecimal.valueOf(82), BigDecimal.valueOf(80), "CELSIUS");
-        RiskFactor currFactor = RiskFactor.of("TEMP_HIGH", "TEMPERATURE", "High temp",
-                BigDecimal.valueOf(91), BigDecimal.valueOf(80), "CELSIUS");
+        RiskFactor prevFactor = RiskFactor.of("TEMP_HIGH", RiskFactorSeverity.HIGH, "High temp",
+                BigDecimal.valueOf(20));
+        RiskFactor currFactor = RiskFactor.of("TEMP_HIGH", RiskFactorSeverity.CRITICAL, "High temp",
+                BigDecimal.valueOf(25));
 
         RiskAssessment previous = createAssessment(60, RiskLevel.MEDIUM, List.of(prevFactor));
         RiskAssessment current = createAssessment(75, RiskLevel.HIGH, List.of(currFactor));
@@ -176,9 +177,9 @@ class RiskAssessmentComparisonServiceTest {
                 .findFirst();
 
         assertTrue(tempChange.isPresent());
-        assertEquals(BigDecimal.valueOf(91), tempChange.get().current().value());
-        assertEquals(BigDecimal.valueOf(82), tempChange.get().previous().value());
-        assertEquals(BigDecimal.valueOf(9), tempChange.get().valueDelta());
+        assertEquals(BigDecimal.valueOf(25), tempChange.get().current().contribution());
+        assertEquals(BigDecimal.valueOf(20), tempChange.get().previous().contribution());
+        assertEquals(BigDecimal.valueOf(5), tempChange.get().contributionDelta());
     }
 
     @Test

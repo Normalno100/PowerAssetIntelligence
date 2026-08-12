@@ -4,6 +4,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.powerassetintelligence.core.ai.RiskFactor;
+import com.powerassetintelligence.core.ai.RiskFactorSeverity;
 import com.powerassetintelligence.core.ai.RiskFeatures;
 import com.powerassetintelligence.core.ai.RiskScoringResult;
 import com.powerassetintelligence.core.ai.RuleBasedRiskEngine;
@@ -106,7 +108,7 @@ class RuleBasedRiskEngineTest {
         RiskScoringResult result = engine.score(features);
 
         assertNotNull(result);
-        assertTrue(result.riskFactors().contains("BASELINE: No risk rules were triggered"));
+        assertTrue(result.riskFactors().isEmpty());
         assertTrue(result.recommendations().contains("Continue routine monitoring"));
     }
 
@@ -166,6 +168,131 @@ class RuleBasedRiskEngineTest {
         RiskScoringResult result = engine.score(features);
 
         assertNotNull(result);
-        assertTrue(result.riskFactors().stream().anyMatch(f -> f.contains("ASSET_CRITICALITY")));
+        assertTrue(result.recommendations().stream()
+                .anyMatch(r -> r.contains("Criticality bonus applied")));
+    }
+
+    @Test
+    void riskFactorShouldHaveCorrectStructure() {
+        RiskFeatures features = new RiskFeatures(
+                UUID.randomUUID(),
+                AssetType.TRANSFORMER,
+                AssetStatus.ACTIVE,
+                AssetCriticality.HIGH,
+                25, // Very old - triggers AgeRiskRule
+                BigDecimal.valueOf(96.0),
+                BigDecimal.valueOf(95.0),
+                5,
+                5L, null, null, null, null, 0L, null, null
+        );
+
+        RiskScoringResult result = engine.score(features);
+
+        for (RiskFactor factor : result.riskFactors()) {
+            assertNotNull(factor.code());
+            assertNotNull(factor.severity());
+            assertNotNull(factor.description());
+            assertNotNull(factor.contribution());
+            assertTrue(factor.contribution().compareTo(BigDecimal.ZERO) > 0);
+        }
+    }
+
+    @Test
+    void riskFactorSeverityShouldBeCorrectlyAssigned() {
+        RiskFeatures features = new RiskFeatures(
+                UUID.randomUUID(),
+                AssetType.TRANSFORMER,
+                AssetStatus.ACTIVE,
+                AssetCriticality.HIGH,
+                25,
+                BigDecimal.valueOf(96.0),
+                BigDecimal.valueOf(95.0),
+                5,
+                5L, null, null, null, null, 0L, null, null
+        );
+
+        RiskScoringResult result = engine.score(features);
+
+        // CRITICAL_TEMPERATURE should be CRITICAL severity
+        boolean hasCritical = result.riskFactors().stream()
+                .anyMatch(f -> "CRITICAL_TEMPERATURE".equals(f.code())
+                        && f.severity() == RiskFactorSeverity.CRITICAL);
+        assertTrue(hasCritical, "CRITICAL_TEMPERATURE factor should have CRITICAL severity");
+    }
+
+    @Test
+    void multipleRiskFactorsShouldHaveCorrectContributions() {
+        RiskFeatures features = new RiskFeatures(
+                UUID.randomUUID(),
+                AssetType.TRANSFORMER,
+                AssetStatus.ACTIVE,
+                AssetCriticality.CRITICAL,
+                25,
+                BigDecimal.valueOf(96.0),
+                BigDecimal.valueOf(95.0),
+                5,
+                5L, null, null, null, null, 0L, null, null
+        );
+
+        RiskScoringResult result = engine.score(features);
+
+        BigDecimal totalContribution = result.riskFactors().stream()
+                .map(RiskFactor::contribution)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        // Total score should equal sum of contributions + criticality bonus, capped at 100
+        BigDecimal criticalityBonus = BigDecimal.valueOf(15);
+        BigDecimal expectedScore = totalContribution.add(criticalityBonus)
+                .min(BigDecimal.valueOf(100))
+                .setScale(2, BigDecimal.ROUND_HALF_UP);
+
+        assertEquals(expectedScore, result.riskScore(), "Score should match sum of contributions + criticality bonus");
+    }
+
+    @Test
+    void emptyRiskFactorsShouldHaveZeroScoreFromRules() {
+        RiskFeatures features = new RiskFeatures(
+                UUID.randomUUID(),
+                AssetType.TRANSFORMER,
+                AssetStatus.ACTIVE,
+                AssetCriticality.LOW,
+                5, // New asset
+                BigDecimal.valueOf(60.0), // Normal temperature
+                BigDecimal.valueOf(50.0), // Normal load
+                0,
+                0L, null, null, null, null, 0L, null, null
+        );
+
+        RiskScoringResult result = engine.score(features);
+
+        assertTrue(result.riskFactors().isEmpty());
+        assertTrue(result.riskScore().compareTo(BigDecimal.ZERO) == 0,
+                "Score should be 0 when no rules trigger and criticality is LOW");
+        assertEquals(RiskLevel.LOW, result.riskLevel());
+    }
+
+    @Test
+    void riskFactorsListShouldNotBeModified() {
+        RiskFeatures features = new RiskFeatures(
+                UUID.randomUUID(),
+                AssetType.TRANSFORMER,
+                AssetStatus.ACTIVE,
+                AssetCriticality.HIGH,
+                10,
+                BigDecimal.valueOf(70.0),
+                BigDecimal.valueOf(60.0),
+                0,
+                0L, null, null, null, null, 0L, null, null
+        );
+
+        RiskScoringResult result = engine.score(features);
+        List<RiskFactor> factors = result.riskFactors();
+
+        try {
+            factors.add(null);
+            throw new AssertionError("Should not be able to modify risk factors list");
+        } catch (UnsupportedOperationException e) {
+            // Expected
+        }
     }
 }

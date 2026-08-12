@@ -1,6 +1,7 @@
 package com.powerassetintelligence.core.ai.rule;
 
 import com.powerassetintelligence.core.ai.RiskFactor;
+import com.powerassetintelligence.core.ai.RiskFactorSeverity;
 import com.powerassetintelligence.core.ai.RiskFeatures;
 import com.powerassetintelligence.core.ai.RiskRule;
 import com.powerassetintelligence.core.ai.RiskRuleResult;
@@ -19,35 +20,27 @@ public class HighTemperatureRiskRule implements RiskRule {
         if (temperature.compareTo(BigDecimal.valueOf(95)) >= 0) {
             RiskFactor factor = RiskFactor.of(
                     "CRITICAL_TEMPERATURE",
-                    "TEMPERATURE",
+                    RiskFactorSeverity.CRITICAL,
                     "Latest temperature is at or above 95°C",
-                    temperature,
-                    BigDecimal.valueOf(95),
-                    "CELSIUS"
+                    BigDecimal.valueOf(35)
             );
             return Optional.of(RiskRuleResult.of(
                     "CRITICAL_TEMPERATURE",
-                    BigDecimal.valueOf(35),
-                    "Latest temperature is at or above 95°C",
-                    List.of("Dispatch inspection crew immediately", "Reduce load until diagnostics are completed"),
-                    factor
+                    factor,
+                    List.of("Dispatch inspection crew immediately", "Reduce load until diagnostics are completed")
             ));
         }
         if (temperature.compareTo(BigDecimal.valueOf(80)) > 0) {
             RiskFactor factor = RiskFactor.of(
                     "HIGH_TEMPERATURE",
-                    "TEMPERATURE",
+                    RiskFactorSeverity.HIGH,
                     "Latest temperature is above 80°C",
-                    temperature,
-                    BigDecimal.valueOf(80),
-                    "CELSIUS"
+                    BigDecimal.valueOf(20)
             );
             return Optional.of(RiskRuleResult.of(
                     "HIGH_TEMPERATURE",
-                    BigDecimal.valueOf(20),
-                    "Latest temperature is above 80°C",
-                    List.of("Inspect thermal condition and cooling system"),
-                    factor
+                    factor,
+                    List.of("Inspect thermal condition and cooling system")
             ));
         }
         return Optional.empty();

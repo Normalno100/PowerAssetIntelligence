@@ -1,8 +1,11 @@
 package com.powerassetintelligence.unit.ai.rule;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.powerassetintelligence.core.ai.RiskFactor;
+import com.powerassetintelligence.core.ai.RiskFactorSeverity;
 import com.powerassetintelligence.core.ai.RiskFeatures;
 import com.powerassetintelligence.core.ai.RiskRuleResult;
 import com.powerassetintelligence.core.ai.rule.MissingTelemetryRiskRule;
@@ -92,6 +95,8 @@ class MissingTelemetryRiskRuleTest {
 
         assertTrue(result.isPresent());
         assertEquals("MISSING_TELEMETRY", result.get().ruleCode());
-        assertEquals(BigDecimal.valueOf(15), result.get().scoreContribution());
+        RiskFactor factor = result.get().riskFactor();
+        assertEquals(BigDecimal.valueOf(15), factor.contribution());
+        assertEquals(RiskFactorSeverity.MEDIUM, factor.severity());
     }
 }

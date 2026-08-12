@@ -1,6 +1,7 @@
 package com.powerassetintelligence.core.ai.rule;
 
 import com.powerassetintelligence.core.ai.RiskFactor;
+import com.powerassetintelligence.core.ai.RiskFactorSeverity;
 import com.powerassetintelligence.core.ai.RiskFeatures;
 import com.powerassetintelligence.core.ai.RiskRule;
 import com.powerassetintelligence.core.ai.RiskRuleResult;
@@ -15,35 +16,27 @@ public class AgeRiskRule implements RiskRule {
         if (features.assetAgeYears() >= 25) {
             RiskFactor factor = RiskFactor.of(
                     "VERY_OLD_ASSET",
-                    "AGE",
+                    RiskFactorSeverity.HIGH,
                     "Asset age is 25 years or more",
-                    BigDecimal.valueOf(features.assetAgeYears()),
-                    BigDecimal.valueOf(25),
-                    "YEARS"
+                    BigDecimal.valueOf(20)
             );
             return Optional.of(RiskRuleResult.of(
                     "VERY_OLD_ASSET",
-                    BigDecimal.valueOf(20),
-                    "Asset age is 25 years or more",
-                    List.of("Evaluate remaining useful life and replacement budget"),
-                    factor
+                    factor,
+                    List.of("Evaluate remaining useful life and replacement budget")
             ));
         }
         if (features.assetAgeYears() > 15) {
             RiskFactor factor = RiskFactor.of(
                     "AGING_ASSET",
-                    "AGE",
+                    RiskFactorSeverity.MEDIUM,
                     "Asset age is above 15 years",
-                    BigDecimal.valueOf(features.assetAgeYears()),
-                    BigDecimal.valueOf(15),
-                    "YEARS"
+                    BigDecimal.valueOf(10)
             );
             return Optional.of(RiskRuleResult.of(
                     "AGING_ASSET",
-                    BigDecimal.valueOf(10),
-                    "Asset age is above 15 years",
-                    List.of("Increase diagnostic frequency"),
-                    factor
+                    factor,
+                    List.of("Increase diagnostic frequency")
             ));
         }
         return Optional.empty();

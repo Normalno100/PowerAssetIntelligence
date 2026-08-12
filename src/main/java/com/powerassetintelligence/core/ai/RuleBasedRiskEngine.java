@@ -47,37 +47,33 @@ public class RuleBasedRiskEngine implements CoreRiskScoringPort {
                 .toList();
 
         BigDecimal baseScore = matchedRules.stream()
-                .map(RiskRuleResult::scoreContribution)
+                .map(r -> r.riskFactor().contribution())
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
         BigDecimal criticalityBonus = criticalityBonus(features.criticality());
         BigDecimal score = baseScore.add(criticalityBonus).min(MAX_SCORE).setScale(2, RoundingMode.HALF_UP);
         RiskLevel level = toRiskLevel(score);
 
+        List<RiskFactor> riskFactors = matchedRules.stream()
+                .map(RiskRuleResult::riskFactor)
+                .toList();
+
         Set<String> recommendations = new LinkedHashSet<>();
-        List<String> riskFactors = new ArrayList<>();
-        List<RiskFactor> structuredRiskFactors = new ArrayList<>();
         for (RiskRuleResult result : matchedRules) {
-            riskFactors.add(result.ruleCode() + ": " + result.riskFactor());
             recommendations.addAll(result.recommendations());
-            if (result.structuredRiskFactor() != null) {
-                structuredRiskFactors.add(result.structuredRiskFactor());
-            }
         }
         addLevelRecommendation(level, recommendations);
 
         if (riskFactors.isEmpty()) {
-            riskFactors.add("BASELINE: No risk rules were triggered");
             recommendations.add("Continue routine monitoring");
         }
         if (criticalityBonus.compareTo(BigDecimal.ZERO) > 0) {
-            riskFactors.add("ASSET_CRITICALITY: Criticality bonus applied: " + criticalityBonus);
+            recommendations.add("Criticality bonus applied: " + criticalityBonus);
         }
 
         return new RiskScoringResult(
                 score,
                 level,
                 List.copyOf(riskFactors),
-                List.copyOf(structuredRiskFactors),
                 List.copyOf(recommendations),
                 buildExplanation(features, matchedRules.size(), criticalityBonus),
                 MODEL_VERSION

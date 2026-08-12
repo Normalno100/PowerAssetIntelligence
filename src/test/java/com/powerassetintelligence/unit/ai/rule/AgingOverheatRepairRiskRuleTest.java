@@ -4,6 +4,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.powerassetintelligence.core.ai.RiskFactor;
+import com.powerassetintelligence.core.ai.RiskFactorSeverity;
 import com.powerassetintelligence.core.ai.RiskFeatures;
 import com.powerassetintelligence.core.ai.RiskRuleResult;
 import com.powerassetintelligence.core.ai.rule.AgingOverheatRepairRiskRule;
@@ -36,8 +38,10 @@ class AgingOverheatRepairRiskRuleTest {
 
         assertTrue(result.isPresent());
         assertEquals("AGING_OVERHEAT_REPAIR_HISTORY", result.get().ruleCode());
-        assertEquals(BigDecimal.valueOf(45), result.get().scoreContribution());
-        assertTrue(result.get().riskFactor().contains("older than 15 years"));
+        RiskFactor factor = result.get().riskFactor();
+        assertEquals(BigDecimal.valueOf(45), factor.contribution());
+        assertEquals(RiskFactorSeverity.CRITICAL, factor.severity());
+        assertNotNull(factor.description());
     }
 
     @Test

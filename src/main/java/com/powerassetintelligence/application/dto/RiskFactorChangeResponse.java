@@ -9,6 +9,6 @@ public record RiskFactorChangeResponse(
         String code,
         RiskFactorResponse previous,
         RiskFactorResponse current,
-        BigDecimal valueDelta
+        BigDecimal contributionDelta
 ) {
 }

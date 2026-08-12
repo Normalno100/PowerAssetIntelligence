@@ -1,6 +1,7 @@
 package com.powerassetintelligence.core.ai.rule;
 
 import com.powerassetintelligence.core.ai.RiskFactor;
+import com.powerassetintelligence.core.ai.RiskFactorSeverity;
 import com.powerassetintelligence.core.ai.RiskFeatures;
 import com.powerassetintelligence.core.ai.RiskRule;
 import com.powerassetintelligence.core.ai.RiskRuleResult;
@@ -43,7 +44,7 @@ public class TemperatureTrendRiskRule implements RiskRule {
             new Level(
                     BigDecimal.valueOf(3.0),  // trend ≥ 3.0 °C/hour
                     BigDecimal.valueOf(70),    // latest ≥ 70 °C
-                    BigDecimal.valueOf(30),    // score
+                    RiskFactorSeverity.CRITICAL,
                     "CRITICAL_TEMPERATURE_TREND",
                     "Temperature is rising critically fast: %s °C/hour (latest=%s °C)",
                     List.of("Invoke emergency maintenance protocol", "Reduce load immediately and dispatch inspection team")
@@ -51,7 +52,7 @@ public class TemperatureTrendRiskRule implements RiskRule {
             new Level(
                     BigDecimal.valueOf(2.0),  // trend ≥ 2.0 °C/hour
                     BigDecimal.valueOf(75),    // latest ≥ 75 °C
-                    BigDecimal.valueOf(22),    // score
+                    RiskFactorSeverity.HIGH,
                     "HIGH_TEMPERATURE_TREND",
                     "Temperature is rising rapidly: %s °C/hour (latest=%s °C)",
                     List.of("Prioritize asset inspection within 2 hours", "Review cooling system performance")
@@ -59,7 +60,7 @@ public class TemperatureTrendRiskRule implements RiskRule {
             new Level(
                     BigDecimal.valueOf(1.0),  // trend ≥ 1.0 °C/hour
                     BigDecimal.valueOf(80),    // latest ≥ 80 °C
-                    BigDecimal.valueOf(15),    // score
+                    RiskFactorSeverity.MEDIUM,
                     "ELEVATED_TEMPERATURE_TREND",
                     "Temperature trend is increasing: %s °C/hour (latest=%s °C)",
                     List.of("Increase monitoring frequency", "Prepare maintenance action plan")
@@ -100,25 +101,26 @@ public class TemperatureTrendRiskRule implements RiskRule {
             return Optional.empty();
         }
 
-        String riskFactor = String.format(
+        String description = String.format(
                 matchedLevel.description, trend, latestTemp);
 
-        RiskFactor structuredFactor = RiskFactor.of(
+        BigDecimal contribution;
+        switch (matchedLevel.severity) {
+            case CRITICAL -> contribution = BigDecimal.valueOf(30);
+            case HIGH -> contribution = BigDecimal.valueOf(22);
+            default -> contribution = BigDecimal.valueOf(15);
+        }
+
+        RiskFactor riskFactor = RiskFactor.of(
                 matchedLevel.code,
-                "TEMPERATURE",
-                "Temperature is rising rapidly",
-                trend,
-                matchedLevel.minTrend,
-                "CELSIUS_PER_HOUR"
-        );
+                matchedLevel.severity,
+                description,
+                contribution);
 
         return Optional.of(RiskRuleResult.of(
                 matchedLevel.code,
-                matchedLevel.score,
                 riskFactor,
-                matchedLevel.recommendations,
-                structuredFactor
-        ));
+                matchedLevel.recommendations));
     }
 
     /**
@@ -127,7 +129,7 @@ public class TemperatureTrendRiskRule implements RiskRule {
     private record Level(
             BigDecimal minTrend,
             BigDecimal minLatestTemp,
-            BigDecimal score,
+            RiskFactorSeverity severity,
             String code,
             String description,
             List<String> recommendations

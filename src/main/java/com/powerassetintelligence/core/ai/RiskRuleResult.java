@@ -5,41 +5,29 @@ import java.util.List;
 
 /**
  * Result of a single {@link RiskRule} evaluation.
- * <p>
- * Contains both the legacy {@code String} riskFactor (for backward
- * compatibility) and an optional structured {@link RiskFactor} for
- * future AI/LLM-powered risk explanations.
+ *
+ * <pre>
+ * Example:
+ *   RiskRuleResult.of("HIGH_TEMPERATURE",
+ *       RiskFactor.of("HIGH_TEMPERATURE", RiskFactorSeverity.HIGH,
+ *           "Temperature above 80°C", BigDecimal.valueOf(20)),
+ *       List.of("Inspect thermal condition"))
+ * </pre>
  */
 public record RiskRuleResult(
         String ruleCode,
-        BigDecimal scoreContribution,
-        String riskFactor,
-        List<String> recommendations,
-        RiskFactor structuredRiskFactor
+        RiskFactor riskFactor,
+        List<String> recommendations
 ) {
 
     /**
-     * Legacy factory method — maintains backward compatibility.
+     * Factory method for creating a RiskRuleResult.
      */
     public static RiskRuleResult of(
             String ruleCode,
-            BigDecimal scoreContribution,
-            String riskFactor,
+            RiskFactor riskFactor,
             List<String> recommendations
     ) {
-        return new RiskRuleResult(ruleCode, scoreContribution, riskFactor, List.copyOf(recommendations), null);
-    }
-
-    /**
-     * Factory method with structured risk factor.
-     */
-    public static RiskRuleResult of(
-            String ruleCode,
-            BigDecimal scoreContribution,
-            String riskFactor,
-            List<String> recommendations,
-            RiskFactor structuredRiskFactor
-    ) {
-        return new RiskRuleResult(ruleCode, scoreContribution, riskFactor, List.copyOf(recommendations), structuredRiskFactor);
+        return new RiskRuleResult(ruleCode, riskFactor, List.copyOf(recommendations));
     }
 }

@@ -1,6 +1,7 @@
 package com.powerassetintelligence.core.ai.rule;
 
 import com.powerassetintelligence.core.ai.RiskFactor;
+import com.powerassetintelligence.core.ai.RiskFactorSeverity;
 import com.powerassetintelligence.core.ai.RiskFeatures;
 import com.powerassetintelligence.core.ai.RiskRule;
 import com.powerassetintelligence.core.ai.RiskRuleResult;
@@ -20,18 +21,14 @@ public class AgingOverheatRepairRiskRule implements RiskRule {
                 && features.repairsLastYear() > 3) {
             RiskFactor factor = RiskFactor.of(
                     "AGING_OVERHEAT_REPAIR_HISTORY",
-                    "COMPOUND",
+                    RiskFactorSeverity.CRITICAL,
                     "Asset is older than 15 years, overheated above 80°C and had more than 3 repairs in the last year",
-                    BigDecimal.valueOf(features.repairsLastYear()),
-                    BigDecimal.valueOf(3),
-                    "COUNT"
+                    BigDecimal.valueOf(45)
             );
             return Optional.of(RiskRuleResult.of(
                     "AGING_OVERHEAT_REPAIR_HISTORY",
-                    BigDecimal.valueOf(45),
-                    "Asset is older than 15 years, overheated above 80°C and had more than 3 repairs in the last year",
-                    List.of("Schedule urgent engineering diagnostics", "Prepare repair or replacement plan"),
-                    factor
+                    factor,
+                    List.of("Schedule urgent engineering diagnostics", "Prepare repair or replacement plan")
             ));
         }
         return Optional.empty();

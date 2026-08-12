@@ -1,6 +1,7 @@
 package com.powerassetintelligence.application.dto;
 
 import com.powerassetintelligence.core.ai.RiskFactor;
+import com.powerassetintelligence.core.ai.RiskFactorSeverity;
 import java.math.BigDecimal;
 
 /**
@@ -8,11 +9,9 @@ import java.math.BigDecimal;
  */
 public record RiskFactorResponse(
         String code,
-        String category,
+        RiskFactorSeverity severity,
         String description,
-        BigDecimal value,
-        BigDecimal threshold,
-        String unit
+        BigDecimal contribution
 ) {
 
     /**
@@ -24,11 +23,9 @@ public record RiskFactorResponse(
         }
         return new RiskFactorResponse(
                 factor.code(),
-                factor.category(),
+                factor.severity(),
                 factor.description(),
-                factor.value(),
-                factor.threshold(),
-                factor.unit()
+                factor.contribution()
         );
     }
 }

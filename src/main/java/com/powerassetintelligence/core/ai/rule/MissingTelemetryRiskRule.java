@@ -1,6 +1,7 @@
 package com.powerassetintelligence.core.ai.rule;
 
 import com.powerassetintelligence.core.ai.RiskFactor;
+import com.powerassetintelligence.core.ai.RiskFactorSeverity;
 import com.powerassetintelligence.core.ai.RiskFeatures;
 import com.powerassetintelligence.core.ai.RiskRule;
 import com.powerassetintelligence.core.ai.RiskRuleResult;
@@ -15,18 +16,14 @@ public class MissingTelemetryRiskRule implements RiskRule {
         if (!features.hasTelemetry()) {
             RiskFactor factor = RiskFactor.of(
                     "MISSING_TELEMETRY",
-                    "DATA_QUALITY",
+                    RiskFactorSeverity.MEDIUM,
                     "No telemetry is available for risk scoring",
-                    BigDecimal.ZERO,
-                    BigDecimal.ONE,
-                    "COUNT"
+                    BigDecimal.valueOf(15)
             );
             return Optional.of(RiskRuleResult.of(
                     "MISSING_TELEMETRY",
-                    BigDecimal.valueOf(15),
-                    "No telemetry is available for risk scoring",
-                    List.of("Upload telemetry or perform field diagnostics"),
-                    factor
+                    factor,
+                    List.of("Upload telemetry or perform field diagnostics")
             ));
         }
         return Optional.empty();

@@ -1,8 +1,11 @@
 package com.powerassetintelligence.unit.ai.rule;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.powerassetintelligence.core.ai.RiskFactor;
+import com.powerassetintelligence.core.ai.RiskFactorSeverity;
 import com.powerassetintelligence.core.ai.RiskFeatures;
 import com.powerassetintelligence.core.ai.RiskRuleResult;
 import com.powerassetintelligence.core.ai.rule.AgeRiskRule;
@@ -35,7 +38,10 @@ class AgeRiskRuleTest {
 
         assertTrue(result.isPresent());
         assertEquals("VERY_OLD_ASSET", result.get().ruleCode());
-        assertEquals(BigDecimal.valueOf(20), result.get().scoreContribution());
+        RiskFactor factor = result.get().riskFactor();
+        assertEquals(BigDecimal.valueOf(20), factor.contribution());
+        assertEquals(RiskFactorSeverity.HIGH, factor.severity());
+        assertNotNull(factor.description());
     }
 
     @Test
@@ -56,7 +62,9 @@ class AgeRiskRuleTest {
 
         assertTrue(result.isPresent());
         assertEquals("AGING_ASSET", result.get().ruleCode());
-        assertEquals(BigDecimal.valueOf(10), result.get().scoreContribution());
+        RiskFactor factor = result.get().riskFactor();
+        assertEquals(BigDecimal.valueOf(10), factor.contribution());
+        assertEquals(RiskFactorSeverity.MEDIUM, factor.severity());
     }
 
     @Test

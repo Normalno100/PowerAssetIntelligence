@@ -1,6 +1,7 @@
 package com.powerassetintelligence.core.ai.rule;
 
 import com.powerassetintelligence.core.ai.RiskFactor;
+import com.powerassetintelligence.core.ai.RiskFactorSeverity;
 import com.powerassetintelligence.core.ai.RiskFeatures;
 import com.powerassetintelligence.core.ai.RiskRule;
 import com.powerassetintelligence.core.ai.RiskRuleResult;
@@ -13,8 +14,6 @@ public class SustainedHighTemperatureRiskRule implements RiskRule {
     private static final BigDecimal SUSTAINED_THRESHOLD_LATEST = BigDecimal.valueOf(85);
     private static final BigDecimal SUSTAINED_THRESHOLD_AVERAGE = BigDecimal.valueOf(75);
     private static final BigDecimal SEVERE_PEAK_THRESHOLD = BigDecimal.valueOf(90);
-    private static final BigDecimal SUSTAINED_SCORE = BigDecimal.valueOf(12);
-    private static final BigDecimal SUSTAINED_WITH_PEAK_SCORE = BigDecimal.valueOf(15);
 
     @Override
     public Optional<RiskRuleResult> evaluate(RiskFeatures features) {
@@ -33,42 +32,32 @@ public class SustainedHighTemperatureRiskRule implements RiskRule {
             return Optional.empty();
         }
 
-        BigDecimal score = severePeak
-                ? SUSTAINED_WITH_PEAK_SCORE
-                : SUSTAINED_SCORE;
+        RiskFactorSeverity severity = severePeak
+                ? RiskFactorSeverity.HIGH
+                : RiskFactorSeverity.MEDIUM;
+        BigDecimal contribution = severePeak
+                ? BigDecimal.valueOf(15)
+                : BigDecimal.valueOf(12);
 
-        String riskFactor;
-        List<String> recommendations;
+        String description = severePeak
+                ? "Severe sustained high temperature peak detected"
+                : "Sustained high temperature over 24h";
 
-        if (severePeak) {
-            riskFactor = String.format(
-                    "Sustained high temperature: latest=%s°C, average24h=%s°C, max24h=%s°C (severe peak detected)",
-                    latest, average, max);
-            recommendations = List.of(
-                    "Inspect asset for overheating damage and review thermal protection",
-                    "Inspect cooling system and thermal conditions");
-        } else {
-            riskFactor = String.format(
-                    "Sustained high temperature: latest=%s°C, average24h=%s°C, max24h=%s°C",
-                    latest, average, max);
-            recommendations = List.of(
-                    "Inspect cooling system and thermal conditions");
-        }
+        List<String> recommendations = severePeak
+                ? List.of(
+                        "Inspect asset for overheating damage and review thermal protection",
+                        "Inspect cooling system and thermal conditions")
+                : List.of("Inspect cooling system and thermal conditions");
 
         RiskFactor factor = RiskFactor.of(
                 "SUSTAINED_HIGH_TEMPERATURE",
-                "TEMPERATURE",
-                severePeak ? "Severe sustained high temperature peak detected" : "Sustained high temperature over 24h",
-                latest,
-                SUSTAINED_THRESHOLD_LATEST,
-                "CELSIUS"
-        );
+                severity,
+                description,
+                contribution);
 
         return Optional.of(RiskRuleResult.of(
                 "SUSTAINED_HIGH_TEMPERATURE",
-                score,
-                riskFactor,
-                recommendations,
-                factor));
+                factor,
+                recommendations));
     }
 }

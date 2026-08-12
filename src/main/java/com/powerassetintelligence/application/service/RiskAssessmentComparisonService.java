@@ -136,16 +136,17 @@ public class RiskAssessmentComparisonService {
             RiskFactor previous = previousMap.get(code);
             RiskFactor current = currentMap.get(code);
 
-            BigDecimal valueDelta = null;
-            if (previous != null && current != null && previous.value() != null && current.value() != null) {
-                valueDelta = current.value().subtract(previous.value());
+            BigDecimal contributionDelta = null;
+            if (previous != null && current != null
+                    && previous.contribution() != null && current.contribution() != null) {
+                contributionDelta = current.contribution().subtract(previous.contribution());
             }
 
             changes.add(new RiskFactorChangeResponse(
                     code,
                     RiskFactorResponse.from(previous),
                     RiskFactorResponse.from(current),
-                    valueDelta
+                    contributionDelta
             ));
         }
 
