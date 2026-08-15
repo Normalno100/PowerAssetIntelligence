@@ -42,7 +42,9 @@ public class RiskAssessmentPersistenceAdapter implements RiskAssessmentRepositor
                 domainAssessment.riskFactors(),
                 domainAssessment.recommendations(),
                 domainAssessment.modelVersion(),
-                domainAssessment.explanation()
+                domainAssessment.explanation(),
+                domainAssessment.createdAt(),
+                domainAssessment.snapshot()
         );
         return PersistenceMapper.toDomain(riskAssessmentRepository.save(entity));
     }

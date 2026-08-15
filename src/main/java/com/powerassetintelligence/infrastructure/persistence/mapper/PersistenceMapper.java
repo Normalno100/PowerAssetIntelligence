@@ -33,9 +33,19 @@ public final class PersistenceMapper {
     }
 
     public static RiskAssessment toDomain(com.powerassetintelligence.infrastructure.persistence.entity.RiskAssessment entity) {
-        return new RiskAssessment(entity.getId(), entity.getAsset().getId(), entity.getAssessedAt(),
-                entity.getRiskScore(), entity.getRiskLevel(), entity.getRiskFactors(), entity.getRecommendations(),
-                entity.getModelVersion(), entity.getExplanation(), entity.getCreatedAt());
+        return new RiskAssessment(
+                entity.getId(),
+                entity.getAsset().getId(),
+                entity.getAssessedAt(),
+                entity.getRiskScore(),
+                entity.getRiskLevel(),
+                entity.getRiskFactors(),
+                entity.getRecommendations(),
+                entity.getModelVersion(),
+                entity.getExplanation(),
+                entity.getCreatedAt(),
+                entity.getSnapshot()
+        );
     }
 
     public static org.springframework.data.domain.Pageable toSpringPageable(com.powerassetintelligence.application.port.out.PageRequest pageRequest) {

@@ -2,12 +2,16 @@ package com.powerassetintelligence.application.service;
 
 import com.powerassetintelligence.application.dto.RiskAssessmentDetailsResponse;
 import com.powerassetintelligence.application.dto.RiskAssessmentResponse;
+import com.powerassetintelligence.application.dto.RiskAssessmentSnapshotResponse;
 import com.powerassetintelligence.application.dto.RiskFactorResponse;
 import com.powerassetintelligence.application.dto.RiskFeaturesResponse;
 import com.powerassetintelligence.application.port.out.PageRequest;
 import com.powerassetintelligence.application.port.out.PageResult;
 import com.powerassetintelligence.application.port.out.RiskAssessmentRepositoryPort;
 import com.powerassetintelligence.core.ai.CoreRiskScoringPort;
+import com.powerassetintelligence.core.ai.RiskAssessmentSnapshot;
+import com.powerassetintelligence.core.ai.RiskExplanationResult;
+import com.powerassetintelligence.core.ai.RiskExplanationService;
 import com.powerassetintelligence.core.ai.RiskFeatures;
 import com.powerassetintelligence.core.ai.RiskScoringResult;
 import com.powerassetintelligence.domain.model.Asset;
@@ -26,6 +30,7 @@ public class RiskAnalysisService {
     private final RiskFeaturesExtractor riskFeaturesExtractor;
     private final RiskAssessmentRepositoryPort riskAssessmentRepository;
     private final CoreRiskScoringPort riskEngine;
+    private final RiskExplanationService riskExplanationService;
     private final java.time.Clock clock;
 
     public RiskAnalysisService(
@@ -33,20 +38,30 @@ public class RiskAnalysisService {
             RiskFeaturesExtractor riskFeaturesExtractor,
             RiskAssessmentRepositoryPort riskAssessmentRepository,
             CoreRiskScoringPort riskEngine,
+            RiskExplanationService riskExplanationService,
             java.time.Clock clock
     ) {
         this.assetService = assetService;
         this.riskFeaturesExtractor = riskFeaturesExtractor;
         this.riskAssessmentRepository = riskAssessmentRepository;
         this.riskEngine = riskEngine;
+        this.riskExplanationService = riskExplanationService;
         this.clock = clock;
     }
 
     @Transactional
     public RiskAssessmentDetailsResponse assess(UUID assetId) {
         Asset asset = assetService.getAsset(assetId);
-        RiskFeatures features = riskFeaturesExtractor.extract(asset);
+        RiskFeaturesExtractor.ExtractResult extractResult = riskFeaturesExtractor.extractWithSnapshot(asset);
+        RiskFeatures features = extractResult.features();
+        RiskAssessmentSnapshot snapshot = extractResult.snapshot();
+
+        // Phase 1: Deterministic scoring
         RiskScoringResult scoringResult = riskEngine.score(features);
+
+        // Phase 2: Explanation generation (strategy can be swapped)
+        RiskExplanationResult explanationResult = riskExplanationService.explain(scoringResult, features);
+
         RiskAssessment assessment = new RiskAssessment(
                 UUID.randomUUID(),
                 asset.getId(),
@@ -54,9 +69,11 @@ public class RiskAnalysisService {
                 scoringResult.riskScore(),
                 scoringResult.riskLevel(),
                 scoringResult.riskFactors(),
-                scoringResult.recommendations(),
-                scoringResult.modelVersion(),
-                scoringResult.explanation()
+                explanationResult.recommendations(),
+                explanationResult.modelVersion(),
+                explanationResult.explanation(),
+                null,
+                snapshot
         );
         return new RiskAssessmentDetailsResponse(
                 toResponse(riskAssessmentRepository.save(assessment)),
@@ -97,7 +114,8 @@ public class RiskAnalysisService {
                 assessment.recommendations(),
                 assessment.modelVersion(),
                 assessment.explanation(),
-                assessment.createdAt()
+                assessment.createdAt(),
+                RiskAssessmentSnapshotResponse.from(assessment.snapshot())
         );
     }
 

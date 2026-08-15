@@ -128,3 +128,19 @@
         </profile>
     </profiles>
 </project>
+assess()
+  │
+  ├─► RiskFeaturesExtractor.extract() ──► RiskFeatures (ephemeral)
+  │                                          │
+  │                                          ▼
+  │                             RuleBasedRiskEngine.score(features)
+  │                                          │
+  │                                          ▼
+  │                              RiskAssessment (без входных данных)
+  │                                          │
+  │                                          ▼
+  │                              RiskAssessmentRepository.save()
+  │                                          │
+  │                                          ▼
+  └──────────────────────────► DB: risk_assessments
+                                      (без входных признаков)

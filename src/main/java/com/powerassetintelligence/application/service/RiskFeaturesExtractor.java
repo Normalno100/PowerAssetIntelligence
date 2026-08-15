@@ -2,6 +2,7 @@ package com.powerassetintelligence.application.service;
 
 import com.powerassetintelligence.application.port.out.MaintenanceRepositoryPort;
 import com.powerassetintelligence.application.port.out.TelemetryRepositoryPort;
+import com.powerassetintelligence.core.ai.RiskAssessmentSnapshot;
 import com.powerassetintelligence.core.ai.RiskFeatures;
 import com.powerassetintelligence.domain.model.Asset;
 import com.powerassetintelligence.domain.model.TelemetryRecord;
@@ -48,8 +49,29 @@ public class RiskFeaturesExtractor {
 
     /**
      * Extracts all risk features for the given asset.
+     * <p>
+     * <b>Deprecated:</b> Use {@link #extractWithSnapshot(Asset)} for full assessment pipeline.
+     * Kept for backward compatibility with existing tests and callers.
+     *
+     * @param asset the asset to extract features for
+     * @return risk features (without snapshot)
+     * @deprecated use {@link #extractWithSnapshot(Asset)} instead
      */
+    @Deprecated
     public RiskFeatures extract(Asset asset) {
+        return extractWithSnapshot(asset).features();
+    }
+
+    /**
+     * Extracts all risk features for the given asset along with an immutable snapshot.
+     * <p>
+     * The snapshot captures the exact input data used to compute the risk assessment,
+     * enabling full reproducibility and auditability of risk decisions.
+     *
+     * @param asset the asset to extract features for
+     * @return result containing both live features and persistent snapshot
+     */
+    public ExtractResult extractWithSnapshot(Asset asset) {
         TelemetryRecord latestTelemetry = telemetryRepository
                 .findFirstByAssetIdOrderByTimestampDesc(asset.getId())
                 .orElse(null);
@@ -78,7 +100,7 @@ public class RiskFeaturesExtractor {
         BigDecimal loadTrend = computeTrendPerHour(
                 telemetry24h, TelemetryRecord::timestamp, TelemetryRecord::loadPercent);
 
-        return new RiskFeatures(
+        RiskFeatures features = new RiskFeatures(
                 asset.getId(),
                 asset.getType(),
                 asset.getStatus(),
@@ -96,6 +118,29 @@ public class RiskFeaturesExtractor {
                 temperatureTrend,
                 loadTrend
         );
+
+        RiskAssessmentSnapshot snapshot = RiskAssessmentSnapshot.from(features);
+        return new ExtractResult(features, snapshot);
+    }
+
+    /**
+     * Returns a snapshot of the features that was captured at assessment time.
+     * <p>
+     * The snapshot is immutable and preserves the exact input data used to compute
+     * the risk assessment, enabling reproducibility regardless of how telemetry
+     * or maintenance data changes over time.
+     *
+     * @param features the features to snapshot
+     * @return an immutable snapshot
+     */
+    public RiskAssessmentSnapshot toSnapshot(RiskFeatures features) {
+        return RiskAssessmentSnapshot.from(features);
+    }
+
+    /**
+     * Holds the result of feature extraction: live features plus a persistent snapshot.
+     */
+    public record ExtractResult(RiskFeatures features, RiskAssessmentSnapshot snapshot) {
     }
 
     /**

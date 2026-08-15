@@ -16,6 +16,7 @@ public record RiskAssessmentResponse(
         List<String> recommendations,
         String modelVersion,
         String explanation,
-        Instant createdAt
+        Instant createdAt,
+        RiskAssessmentSnapshotResponse snapshot
 ) {
 }

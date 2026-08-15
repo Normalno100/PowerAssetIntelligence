@@ -1,6 +1,9 @@
 package com.powerassetintelligence.infrastructure.persistence.entity;
 
+import com.powerassetintelligence.core.ai.RiskAssessmentSnapshot;
+import com.powerassetintelligence.core.ai.RiskFactor;
 import com.powerassetintelligence.domain.model.RiskLevel;
+import com.powerassetintelligence.infrastructure.persistence.converter.RiskAssessmentSnapshotConverter;
 import com.powerassetintelligence.infrastructure.persistence.converter.RiskFactorConverter;
 import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
@@ -21,8 +24,6 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-import com.powerassetintelligence.infrastructure.persistence.entity.AssetEntity;
-import com.powerassetintelligence.core.ai.RiskFactor;
 
 @Entity
 @Table(
@@ -70,6 +71,10 @@ public class RiskAssessment {
     @Column(nullable = false, updatable = false)
     private Instant createdAt;
 
+    @Column(name = "risk_assessment_snapshot", columnDefinition = "TEXT")
+    @Convert(converter = RiskAssessmentSnapshotConverter.class)
+    private RiskAssessmentSnapshot snapshot;
+
     protected RiskAssessment() {
     }
 
@@ -84,6 +89,23 @@ public class RiskAssessment {
             String modelVersion,
             String explanation
     ) {
+        this(id, asset, assessedAt, riskScore, riskLevel, riskFactors, recommendations, modelVersion, explanation,
+                null, null);
+    }
+
+    public RiskAssessment(
+            UUID id,
+            AssetEntity asset,
+            Instant assessedAt,
+            BigDecimal riskScore,
+            RiskLevel riskLevel,
+            List<RiskFactor> riskFactors,
+            List<String> recommendations,
+            String modelVersion,
+            String explanation,
+            Instant createdAt,
+            RiskAssessmentSnapshot snapshot
+    ) {
         this.id = id;
         this.asset = asset;
         this.assessedAt = assessedAt;
@@ -93,6 +115,8 @@ public class RiskAssessment {
         this.recommendations = new ArrayList<>(recommendations == null ? List.of() : recommendations);
         this.modelVersion = modelVersion;
         this.explanation = explanation;
+        this.createdAt = createdAt != null ? createdAt : Instant.now();
+        this.snapshot = snapshot;
     }
 
     @PrePersist
@@ -138,5 +162,9 @@ public class RiskAssessment {
 
     public Instant getCreatedAt() {
         return createdAt;
+    }
+
+    public RiskAssessmentSnapshot getSnapshot() {
+        return snapshot;
     }
 }

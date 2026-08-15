@@ -12,12 +12,25 @@ import com.powerassetintelligence.domain.model.AssetCriticality;
 import com.powerassetintelligence.domain.model.RiskLevel;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.ArrayList;
-import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Set;
 import org.springframework.stereotype.Component;
 
+/**
+ * Deterministic rule-based risk scoring engine.
+ * <p>
+ * Implements {@link CoreRiskScoringPort} to produce lean scoring results
+ * ({@code riskScore}, {@code riskLevel}, {@code riskFactors}). Human-readable
+ * explanations are generated separately by {@link RiskExplanationService}.
+ *
+ * <pre>
+ * Example:
+ *   CoreRiskScoringPort engine = new RuleBasedRiskEngine();
+ *   RiskScoringResult result = engine.score(features);
+ * </pre>
+ *
+ * @see CoreRiskScoringPort
+ * @see RiskExplanationService
+ */
 @Component
 public class RuleBasedRiskEngine implements CoreRiskScoringPort {
 
@@ -41,14 +54,9 @@ public class RuleBasedRiskEngine implements CoreRiskScoringPort {
 
     @Override
     public RiskScoringResult score(RiskFeatures features) {
-        List<RiskRuleResult> matchedRules = rules.stream()
-                .map(rule -> rule.evaluate(features))
-                .flatMap(optional -> optional.stream())
-                .toList();
+        List<RiskRuleResult> matchedRules = evaluateRules(features);
 
-        BigDecimal baseScore = matchedRules.stream()
-                .map(r -> r.riskFactor().contribution())
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        BigDecimal baseScore = sumContributions(matchedRules);
         BigDecimal criticalityBonus = criticalityBonus(features.criticality());
         BigDecimal score = baseScore.add(criticalityBonus).min(MAX_SCORE).setScale(2, RoundingMode.HALF_UP);
         RiskLevel level = toRiskLevel(score);
@@ -57,27 +65,20 @@ public class RuleBasedRiskEngine implements CoreRiskScoringPort {
                 .map(RiskRuleResult::riskFactor)
                 .toList();
 
-        Set<String> recommendations = new LinkedHashSet<>();
-        for (RiskRuleResult result : matchedRules) {
-            recommendations.addAll(result.recommendations());
-        }
-        addLevelRecommendation(level, recommendations);
+        return new RiskScoringResult(score, level, riskFactors);
+    }
 
-        if (riskFactors.isEmpty()) {
-            recommendations.add("Continue routine monitoring");
-        }
-        if (criticalityBonus.compareTo(BigDecimal.ZERO) > 0) {
-            recommendations.add("Criticality bonus applied: " + criticalityBonus);
-        }
+    private List<RiskRuleResult> evaluateRules(RiskFeatures features) {
+        return rules.stream()
+                .map(rule -> rule.evaluate(features))
+                .flatMap(optional -> optional.stream())
+                .toList();
+    }
 
-        return new RiskScoringResult(
-                score,
-                level,
-                List.copyOf(riskFactors),
-                List.copyOf(recommendations),
-                buildExplanation(features, matchedRules.size(), criticalityBonus),
-                MODEL_VERSION
-        );
+    private BigDecimal sumContributions(List<RiskRuleResult> matchedRules) {
+        return matchedRules.stream()
+                .map(r -> r.riskFactor().contribution())
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
     private BigDecimal criticalityBonus(AssetCriticality criticality) {
@@ -103,25 +104,5 @@ public class RuleBasedRiskEngine implements CoreRiskScoringPort {
             return RiskLevel.MEDIUM;
         }
         return RiskLevel.LOW;
-    }
-
-    private void addLevelRecommendation(RiskLevel level, Set<String> recommendations) {
-        switch (level) {
-            case CRITICAL -> recommendations.add("Create immediate maintenance work order and notify dispatcher");
-            case HIGH -> recommendations.add("Prioritize asset in the next maintenance planning window");
-            case MEDIUM -> recommendations.add("Increase monitoring frequency and schedule diagnostics");
-            case LOW -> recommendations.add("Keep standard preventive maintenance schedule");
-        }
-    }
-
-    private String buildExplanation(RiskFeatures features, int matchedRuleCount, BigDecimal criticalityBonus) {
-        return "Rule-based assessment evaluated " + matchedRuleCount
-                + " triggered rules for asset " + features.assetId()
-                + "; ageYears=" + features.assetAgeYears()
-                + "; latestTemperatureCelsius=" + features.latestTemperatureCelsius()
-                + "; latestLoadPercent=" + features.latestLoadPercent()
-                + "; repairsLastYear=" + features.repairsLastYear()
-                + "; criticalityBonus=" + criticalityBonus
-                + "; modelVersion=" + MODEL_VERSION;
     }
 }
