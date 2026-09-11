@@ -22,7 +22,7 @@ export function DashboardPage() {
     labels: telemetry.map((t) => new Date(t.timestamp).toLocaleTimeString()),
     datasets: [
       { label: 'Temperature °C', data: telemetry.map((t) => t.temperatureCelsius), borderColor: '#f43f5e' },
-      { label: 'Load %', data: telemetry.map((t) => t.loadPercentage), borderColor: '#60a5fa' }
+      { label: 'Load %', data: telemetry.map((t) => t.loadPercent), borderColor: '#60a5fa' }
     ]
   }), [telemetry]);
 

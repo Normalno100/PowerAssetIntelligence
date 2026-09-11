@@ -10,17 +10,28 @@ export interface Asset {
   status: string;
   criticality: string;
   location: string;
-  commissionDate: string;
+  installationDate: string;
+  manufacturer: string;
+  expectedServiceLifeYears: number;
+  technicalParameters: Record<string, string>;
+  version: number;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface TelemetryRecord {
   id: string;
   assetId: string;
-  temperatureCelsius: number;
-  loadPercentage: number;
-  oilLevelPercentage: number;
-  vibrationMmS: number;
   timestamp: string;
+  temperatureCelsius: number;
+  loadPercent: number;
+  voltageKv: number;
+  currentAmpere: number;
+  vibrationMmS: number;
+  overheatingCount: number;
+  sourceSensorId: string;
+  externalTelemetryId: string;
+  createdAt: string;
 }
 
 export interface RiskFactor {
@@ -28,6 +39,24 @@ export interface RiskFactor {
   severity: string;
   description: string;
   contribution: number;
+}
+
+export interface RiskAssessmentSnapshot {
+  assetType: string;
+  assetStatus: string;
+  criticality: string;
+  assetAgeYears: number;
+  latestTemperatureCelsius: number;
+  latestLoadPercent: number;
+  latestOverheatingCount: number;
+  repairsLastYear: number;
+  averageTemperatureCelsius: number;
+  maxTemperatureCelsius: number;
+  averageLoadPercent: number;
+  maxLoadPercent: number;
+  overheatingEventsLast24Hours: number;
+  temperatureTrendCelsiusPerHour: number;
+  loadTrendPercentPerHour: number;
 }
 
 export interface RiskAssessment {
@@ -41,10 +70,29 @@ export interface RiskAssessment {
   modelVersion: string;
   explanation: string;
   createdAt: string;
-  snapshot: Record<string, unknown>;
+  snapshot: RiskAssessmentSnapshot;
+}
+
+export interface RiskFeaturesResponse {
+  assetId: string;
+  assetType: string;
+  assetStatus: string;
+  criticality: string;
+  assetAgeYears: number;
+  latestTemperatureCelsius: number;
+  latestLoadPercent: number;
+  latestOverheatingCount: number;
+  repairsLastYear: number;
+  averageTemperatureCelsius: number;
+  maxTemperatureCelsius: number;
+  averageLoadPercent: number;
+  maxLoadPercent: number;
+  overheatingEventsLast24Hours: number;
+  temperatureTrendCelsiusPerHour: number;
+  loadTrendPercentPerHour: number;
 }
 
 export interface RiskAssessmentDetails {
   assessment: RiskAssessment;
-  features: Record<string, unknown>;
+  features: RiskFeaturesResponse;
 }

@@ -24,7 +24,7 @@ export function AssetDetailsPage() {
         <h2 className="text-xl font-semibold">{asset?.name}</h2>
         <p className="text-sm text-slate-400">{asset?.type} • {asset?.location} • {asset?.status}</p>
       </section>
-      <section className="rounded-xl border border-slate-800 bg-slate-900 p-4"><h3 className="mb-3 font-semibold">Detailed Telemetry</h3><Line data={{ labels: telemetry.map((t) => new Date(t.timestamp).toLocaleTimeString()), datasets: [{ label: 'Vibration mm/s', data: telemetry.map((t) => t.vibrationMmS), borderColor: '#a78bfa' }, { label: 'Oil Level %', data: telemetry.map((t) => t.oilLevelPercentage), borderColor: '#34d399' }] }} /></section>
+      <section className="rounded-xl border border-slate-800 bg-slate-900 p-4"><h3 className="mb-3 font-semibold">Detailed Telemetry</h3><Line data={{ labels: telemetry.map((t) => new Date(t.timestamp).toLocaleTimeString()), datasets: [{ label: 'Vibration mm/s', data: telemetry.map((t) => t.vibrationMmS), borderColor: '#a78bfa' }, { label: 'Voltage kV', data: telemetry.map((t) => t.voltageKv), borderColor: '#34d399' }] }} /></section>
       <section className="rounded-xl border border-slate-800 bg-slate-900 p-4">
         <h3 className="mb-3 font-semibold">AI Risk Explainability</h3>
         <p className="mb-3 text-sm text-slate-300">Risk score: <span className="font-bold text-red-400">{risk?.riskScore?.toFixed(1) ?? '-'}</span></p>
