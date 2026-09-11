@@ -23,15 +23,28 @@ export interface TelemetryRecord {
   timestamp: string;
 }
 
+export interface RiskFactor {
+  code: string;
+  severity: string;
+  description: string;
+  contribution: number;
+}
+
 export interface RiskAssessment {
   id: string;
   assetId: string;
-  riskLevel: string;
-  riskScore: number;
   assessedAt: string;
+  riskScore: number;
+  riskLevel: string;
+  riskFactors: RiskFactor[];
+  recommendations: string[];
+  modelVersion: string;
+  explanation: string;
+  createdAt: string;
+  snapshot: Record<string, unknown>;
 }
 
-export interface RiskAssessmentDetails extends RiskAssessment {
-  recommendations: string[];
-  ruleResults: { ruleName: string; score: number; triggered: boolean; reason: string }[];
+export interface RiskAssessmentDetails {
+  assessment: RiskAssessment;
+  features: Record<string, unknown>;
 }
