@@ -1,20 +1,44 @@
 import type { Asset, Page, RiskAssessment, RiskAssessmentDetails, TelemetryRecord } from '../types/api';
 
+export interface ApiError extends Error {
+  detail?: string;
+  status: number;
+}
+
+interface ProblemDetail {
+  detail?: string;
+}
+
+const baseUrl = import.meta.env.VITE_API_BASE_URL || '';
+
+async function handleResponse(response: Response): Promise<void> {
+  if (!response.ok) {
+    let message: string;
+    try {
+      const problem: ProblemDetail = await response.json();
+      message = problem.detail || response.statusText || `HTTP ${response.status}`;
+    } catch {
+      message = response.statusText || `HTTP ${response.status}`;
+    }
+    const error = new Error(message) as ApiError;
+    error.status = response.status;
+    throw error;
+  }
+}
+
 async function post<T>(path: string, body?: unknown): Promise<T> {
   const response = await fetch(`${baseUrl}${path}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: body ? JSON.stringify(body) : undefined,
   });
-  if (!response.ok) throw new Error(`API error ${response.status}`);
+  await handleResponse(response);
   return response.json() as Promise<T>;
 }
 
-const baseUrl = import.meta.env.VITE_API_BASE_URL || '';
-
 async function get<T>(path: string): Promise<T> {
   const response = await fetch(`${baseUrl}${path}`);
-  if (!response.ok) throw new Error(`API error ${response.status}`);
+  await handleResponse(response);
   return response.json() as Promise<T>;
 }
 
