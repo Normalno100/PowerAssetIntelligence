@@ -27,7 +27,7 @@ export interface TelemetryRecord {
   loadPercent: number;
   voltageKv: number;
   currentAmpere: number;
-  vibrationMmS: number;
+  vibrationMmSec: number;
   overheatingCount: number;
   sourceSensorId: string;
   externalTelemetryId: string;

@@ -30,7 +30,7 @@ export function AssetDetailsPage() {
         <h2 className="text-xl font-semibold">{asset?.name}</h2>
         <p className="text-sm text-slate-400">{asset?.type} • {asset?.location} • {asset?.status}</p>
       </section>
-      <section className="rounded-xl border border-slate-800 bg-slate-900 p-4"><h3 className="mb-3 font-semibold">Detailed Telemetry</h3><Line data={{ labels: telemetry.map((t) => new Date(t.timestamp).toLocaleTimeString()), datasets: [{ label: 'Vibration mm/s', data: telemetry.map((t) => t.vibrationMmS), borderColor: '#a78bfa' }, { label: 'Temperature °C', data: telemetry.map((t) => t.temperatureCelsius), borderColor: '#f87171' }, { label: 'Load %', data: telemetry.map((t) => t.loadPercent), borderColor: '#fbbf24' }] }} /></section>
+      <section className="rounded-xl border border-slate-800 bg-slate-900 p-4"><h3 className="mb-3 font-semibold">Detailed Telemetry</h3><Line data={{ labels: telemetry.map((t) => new Date(t.timestamp).toLocaleTimeString()), datasets: [{ label: 'Vibration mm/s', data: telemetry.map((t) => t.vibrationMmSec), borderColor: '#a78bfa' }, { label: 'Temperature °C', data: telemetry.map((t) => t.temperatureCelsius), borderColor: '#f87171' }, { label: 'Load %', data: telemetry.map((t) => t.loadPercent), borderColor: '#fbbf24' }] }} /></section>
       <section className="rounded-xl border border-slate-800 bg-slate-900 p-4">
         <h3 className="mb-3 font-semibold">AI Risk Explainability</h3>
         {risk === null ? (
