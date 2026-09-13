@@ -15,7 +15,6 @@ import com.powerassetintelligence.domain.model.RiskLevel;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;
-import org.springframework.stereotype.Component;
 
 /**
  * Deterministic rule-based risk scoring engine.
@@ -33,7 +32,6 @@ import org.springframework.stereotype.Component;
  * @see CoreRiskScoringPort
  * @see RiskExplanationService
  */
-@Component
 public class RuleBasedRiskEngine implements CoreRiskScoringPort {
 
     public static final String MODEL_VERSION = "rules-2026.05";

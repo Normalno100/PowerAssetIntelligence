@@ -8,7 +8,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
-import org.springframework.stereotype.Service;
 
 /**
  * Default deterministic implementation of {@link RiskExplanationService}.
@@ -24,7 +23,6 @@ import org.springframework.stereotype.Service;
  *   RiskExplanationResult explanation = deterministicService.explain(score, features);
  * </pre>
  */
-@Service
 public class DeterministicRiskExplanationService implements RiskExplanationService {
 
     @Override
