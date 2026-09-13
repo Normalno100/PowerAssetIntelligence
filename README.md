@@ -149,17 +149,140 @@ Content-Type: application/json
 GET /api/v1/assets?type=TRANSFORMER&status=ACTIVE&criticality=HIGH&location=Северная&page=0&size=20
 ```
 
-#### Оценка риска
+#### Создание оценки риска
 
 ```http
-GET /api/v1/risk-analysis/{assetId}
+POST /api/v1/assets/{assetId}/risk-assessments
 ```
 
-Ответ содержит:
-- `riskScore` — числовая оценка риска (0-100)
-- `riskLevel` — CRITICAL / HIGH / MEDIUM / LOW
-- `riskFactors` — список факторов, повлиявших на оценку
-- `recommendations` — рекомендации по действию
+Создаёт новую оценку риска для актива на основе текущей телеметрии, истории обслуживания и ML-модели.
+
+**Ответ:** `RiskAssessmentDetailsResponse`
+- `assessment` — объект `RiskAssessmentResponse` (см. ниже)
+- `features` — `RiskFeaturesResponse` (снимок входных признаков, использованных для расчёта)
+
+---
+
+#### Последняя оценка риска
+
+```http
+GET /api/v1/assets/{assetId}/risk-assessments/latest
+```
+
+Возвращает последнюю (самую свежую) оценку риска для актива.
+
+**Ответ:** `RiskAssessmentResponse`
+
+| Поле | Тип | Описание |
+|------|-----|----------|
+| `id` | UUID | UUID оценки |
+| `assetId` | UUID | UUID актива |
+| `assessedAt` | Instant | Дата и время оценки |
+| `riskScore` | BigDecimal (0–100) | Числовая оценка риска |
+| `riskLevel` | RiskLevel | `LOW`, `MEDIUM`, `HIGH`, `CRITICAL` |
+| `riskFactors` | List\<RiskFactorResponse\> | Массив структурированных факторов риска |
+| `recommendations` | List\<String\> | Рекомендации по действию |
+| `modelVersion` | String | Версия модели |
+| `explanation` | String | Текстовое объяснение оценки |
+| `createdAt` | Instant | Время создания записи |
+| `snapshot` | RiskAssessmentSnapshotResponse | Снимок входных данных для аудита |
+
+**Пример `riskFactors` (каждый элемент):**
+
+| Поле | Тип | Описание |
+|------|-----|----------|
+| `code` | String | Код фактора (напр. `AGE_ABOVE_15_YEARS`) |
+| `severity` | RiskFactorSeverity | `LOW`, `MEDIUM`, `HIGH`, `CRITICAL` |
+| `description` | String | Человекочитаемое описание |
+| `contribution` | BigDecimal | Вклад фактора в общий score |
+
+---
+
+#### Сравнение с предыдущей оценкой
+
+```http
+GET /api/v1/assets/{assetId}/risk-assessments/latest/comparison
+```
+
+Сравнивает последнюю оценку с предыдущей.
+
+**Ответ:** `RiskAssessmentComparisonResponse`
+
+| Поле | Тип | Описание |
+|------|-----|----------|
+| `currentScore` | BigDecimal | Текущий score |
+| `previousScore` | BigDecimal | Предыдущий score |
+| `scoreDelta` | BigDecimal | Разница (current − previous) |
+| `currentLevel` | RiskLevel | Текущий уровень риска |
+| `previousLevel` | RiskLevel | Предыдущий уровень риска |
+| `direction` | RiskChangeDirection | `INCREASED`, `DECREASED`, `STABLE` |
+| `factorChanges` | List\<RiskFactorChangeResponse\> | Изменения по каждому фактору |
+
+---
+
+#### История оценок (paginated)
+
+```http
+GET /api/v1/assets/{assetId}/risk-assessments?page=0&size=20&sort=assessedAt,desc
+```
+
+Возвращает страницу оценок риска для актива.
+
+**Ответ:** `PageResult<RiskAssessmentResponse>`
+
+| Поле | Тип | Описание |
+|------|-----|----------|
+| `content` | List\<RiskAssessmentResponse\> | Массив оценок |
+| `page` | int | Номер страницы |
+| `size` | int | Размер страницы |
+| `totalElements` | long | Общее число оценок |
+| `totalPages` | int | Общее число страниц |
+
+---
+
+#### Тренд риска
+
+```http
+GET /api/v1/assets/{assetId}/risk-assessments/trend?limit=20
+```
+
+`limit` — от 1 до 100 (по умолчанию 20).
+
+**Ответ:** `RiskTrendResponse`
+
+| Поле | Тип | Описание |
+|------|-----|----------|
+| `assetId` | UUID | UUID актива |
+| `points` | List\<RiskTrendPoint\> | Точки истории |
+| `currentScore` | BigDecimal | Текущий score |
+| `previousScore` | BigDecimal | Предыдущий score |
+| `totalChange` | BigDecimal | Общее изменение |
+| `averageChange` | BigDecimal | Среднее изменение между оценками |
+| `direction` | TrendDirection | `RISING`, `FALLING`, `STABLE` |
+
+**Каждая точка (`RiskTrendPoint`):**
+
+| Поле | Тип | Описание |
+|------|-----|----------|
+| `assessmentId` | UUID | UUID оценки |
+| `assetId` | UUID | UUID актива |
+| `assessedAt` | Instant | Время оценки |
+| `riskScore` | BigDecimal | Score на момент оценки |
+| `riskLevel` | RiskLevel | Уровень риска |
+| `scoreChange` | BigDecimal | Изменение к предыдущей (null для первой) |
+| `trend` | TrendDirection | Направление: `RISING`, `FALLING`, `STABLE` |
+
+---
+
+#### Топ самых рискованных активов
+
+```http
+GET /api/v1/risk-assessments/top-risky?page=0&size=20&sort=riskScore,desc
+```
+
+Возвращает самые рискованные активы, отсортированные по убыванию `riskScore`.
+
+**Ответ:** `PageResult<RiskAssessmentResponse>` (такая же структура, как в «История оценок»).
 
 ### Загрузка телеметрии
 
@@ -335,16 +458,44 @@ uvicorn app.main:app --reload --port 8000
 - overheatingCount: Integer
 ```
 
-### RiskAssessment
+### RiskAssessment (API DTO)
 
 ```java
+// RiskAssessmentResponse
 - id: UUID
 - assetId: UUID
+- assessedAt: Instant
 - riskScore: BigDecimal (0-100)
-- riskLevel: RiskLevel
-- riskFactors: List<String>
+- riskLevel: RiskLevel (LOW, MEDIUM, HIGH, CRITICAL)
+- riskFactors: List<RiskFactorResponse>  // code, severity, description, contribution
 - recommendations: List<String>
 - modelVersion: String
+- explanation: String
+- createdAt: Instant
+- snapshot: RiskAssessmentSnapshotResponse  // входные данные для аудита
+
+// RiskFactorResponse
+- code: String  // напр. AGE_ABOVE_15_YEARS
+- severity: RiskFactorSeverity (LOW, MEDIUM, HIGH, CRITICAL)
+- description: String
+- contribution: BigDecimal
+
+// RiskAssessmentSnapshotResponse
+- assetType: AssetType
+- assetStatus: AssetStatus
+- criticality: AssetCriticality
+- assetAgeYears: int
+- latestTemperatureCelsius: BigDecimal
+- latestLoadPercent: BigDecimal
+- latestOverheatingCount: Integer
+- repairsLastYear: long
+- averageTemperatureCelsius: BigDecimal
+- maxTemperatureCelsius: BigDecimal
+- averageLoadPercent: BigDecimal
+- maxLoadPercent: BigDecimal
+- overheatingEventsLast24Hours: long
+- temperatureTrendCelsiusPerHour: BigDecimal
+- loadTrendPercentPerHour: BigDecimal
 ```
 
 ---
