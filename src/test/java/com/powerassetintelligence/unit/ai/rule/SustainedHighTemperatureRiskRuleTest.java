@@ -6,7 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.powerassetintelligence.core.ai.RiskFactor;
 import com.powerassetintelligence.core.ai.RiskFactorSeverity;
-import com.powerassetintelligence.core.ai.RiskFeatures;
+import com.powerassetintelligence.application.dto.RiskFeatures;
 import com.powerassetintelligence.core.ai.RiskRuleResult;
 import com.powerassetintelligence.core.ai.rule.SustainedHighTemperatureRiskRule;
 import com.powerassetintelligence.domain.model.AssetCriticality;

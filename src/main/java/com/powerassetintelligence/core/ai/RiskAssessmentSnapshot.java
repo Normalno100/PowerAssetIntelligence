@@ -1,5 +1,6 @@
 package com.powerassetintelligence.core.ai;
 
+import com.powerassetintelligence.application.dto.RiskFeatures;
 import com.powerassetintelligence.domain.model.AssetCriticality;
 import com.powerassetintelligence.domain.model.AssetStatus;
 import com.powerassetintelligence.domain.model.AssetType;

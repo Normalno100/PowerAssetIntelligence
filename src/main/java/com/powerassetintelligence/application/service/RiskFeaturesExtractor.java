@@ -2,8 +2,8 @@ package com.powerassetintelligence.application.service;
 
 import com.powerassetintelligence.application.port.out.MaintenanceRepositoryPort;
 import com.powerassetintelligence.application.port.out.TelemetryRepositoryPort;
+import com.powerassetintelligence.application.dto.RiskFeatures;
 import com.powerassetintelligence.core.ai.RiskAssessmentSnapshot;
-import com.powerassetintelligence.core.ai.RiskFeatures;
 import com.powerassetintelligence.domain.model.Asset;
 import com.powerassetintelligence.domain.model.TelemetryRecord;
 import java.math.BigDecimal;

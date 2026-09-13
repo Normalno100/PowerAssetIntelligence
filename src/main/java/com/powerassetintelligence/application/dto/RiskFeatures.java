@@ -1,4 +1,4 @@
-package com.powerassetintelligence.core.ai;
+package com.powerassetintelligence.application.dto;
 
 import com.powerassetintelligence.domain.model.AssetCriticality;
 import com.powerassetintelligence.domain.model.AssetStatus;

@@ -1,5 +1,8 @@
 package com.powerassetintelligence.core.ai;
 
+import com.powerassetintelligence.application.dto.RiskFeatures;
+import com.powerassetintelligence.application.dto.RiskScoringResult;
+
 /**
  * Port for generating human-readable risk explanations from a scoring result.
  *

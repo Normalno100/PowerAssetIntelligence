@@ -1,4 +1,4 @@
-package com.powerassetintelligence.core.ai;
+package com.powerassetintelligence.application.dto;
 
 import com.powerassetintelligence.domain.model.RiskLevel;
 import java.math.BigDecimal;
@@ -9,7 +9,7 @@ import java.util.List;
  * <p>
  * This record contains only the numeric and structured scoring output.
  * Human-readable explanations and recommendations are generated separately
- * via {@link RiskExplanationService} to enable different explanation strategies.
+ * via {@link com.powerassetintelligence.core.ai.RiskExplanationService} to enable different explanation strategies.
  * <p>
  * <pre>
  * Example:
@@ -20,7 +20,7 @@ import java.util.List;
  *   )
  * </pre>
  *
- * @see RiskExplanationService
+ * @see com.powerassetintelligence.core.ai.RiskExplanationService
  */
 public record RiskScoringResult(
 
@@ -32,11 +32,11 @@ public record RiskScoringResult(
         /**
          * Risk level derived from score thresholds.
          */
-        RiskLevel riskLevel,
+        com.powerassetintelligence.domain.model.RiskLevel riskLevel,
 
         /**
          * Ordered list of contributing risk factors.
          */
-        List<RiskFactor> riskFactors
+        List<com.powerassetintelligence.core.ai.RiskFactor> riskFactors
 ) {
 }

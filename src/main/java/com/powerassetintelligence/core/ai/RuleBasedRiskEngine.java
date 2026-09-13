@@ -1,5 +1,7 @@
 package com.powerassetintelligence.core.ai;
 
+import com.powerassetintelligence.application.dto.RiskFeatures;
+import com.powerassetintelligence.application.dto.RiskScoringResult;
 import com.powerassetintelligence.core.ai.rule.AgeRiskRule;
 import com.powerassetintelligence.core.ai.rule.AgingOverheatRepairRiskRule;
 import com.powerassetintelligence.core.ai.rule.HighLoadCoolingRiskRule;
