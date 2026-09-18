@@ -13,6 +13,7 @@ import com.powerassetintelligence.domain.model.TelemetryRecord;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
@@ -59,12 +60,16 @@ public class TelemetryService {
      * after receiving and validating a telemetry message from Kafka. It performs
      * idempotent persistence (by externalTelemetryId) and asset status validation.
      *
+     * Uses READ_COMMITTED isolation so that when the adapter catches a
+     * DataIntegrityViolationException (TOCTOU race), the retrying thread can
+     * see the record committed by the winning thread within the same DB session.
+     *
      * Semantics: "telemetry persisted to database"
      *
      * @param request the original HTTP request (preserved for Kafka consumer compatibility)
      * @return persisted telemetry response
      */
-    @Transactional
+    @Transactional(isolation = Isolation.READ_COMMITTED)
     public TelemetryResponse persist(TelemetryCreateCommand request) {
         if (request.externalTelemetryId() != null) {
             return telemetryRecordRepository.findByExternalTelemetryId(request.externalTelemetryId())
