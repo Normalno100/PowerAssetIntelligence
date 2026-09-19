@@ -12,7 +12,6 @@ import com.powerassetintelligence.application.service.RiskHistoryService;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import java.util.UUID;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
@@ -26,8 +25,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/v1")
 public class RiskAnalysisController {
-
-    private static final int MAX_PAGE_SIZE = 500;
 
     private final RiskAnalysisService riskAnalysisService;
     private final RiskAssessmentComparisonService comparisonService;

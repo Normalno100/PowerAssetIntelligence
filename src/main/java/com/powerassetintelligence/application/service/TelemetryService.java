@@ -11,7 +11,6 @@ import com.powerassetintelligence.domain.model.AssetStatus;
 import com.powerassetintelligence.domain.model.Asset;
 import com.powerassetintelligence.domain.model.TelemetryRecord;
 import java.util.UUID;
-import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;

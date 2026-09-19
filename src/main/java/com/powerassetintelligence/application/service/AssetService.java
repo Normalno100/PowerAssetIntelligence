@@ -12,7 +12,6 @@ import com.powerassetintelligence.application.port.out.PageRequest;
 import com.powerassetintelligence.application.port.out.PageResult;
 import java.util.Map;
 import java.util.UUID;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
