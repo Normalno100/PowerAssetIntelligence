@@ -1,8 +1,8 @@
 package com.powerassetintelligence.core.ai.rule;
 
-import com.powerassetintelligence.core.ai.RiskFactor;
-import com.powerassetintelligence.core.ai.RiskFactorSeverity;
-import com.powerassetintelligence.application.dto.RiskFeatures;
+import com.powerassetintelligence.domain.model.RiskFactor;
+import com.powerassetintelligence.domain.model.RiskFactorSeverity;
+import com.powerassetintelligence.domain.model.RiskFeatures;
 import com.powerassetintelligence.core.ai.RiskRule;
 import com.powerassetintelligence.core.ai.RiskRuleResult;
 import java.math.BigDecimal;

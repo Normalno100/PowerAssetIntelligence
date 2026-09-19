@@ -3,6 +3,7 @@ package com.powerassetintelligence.infrastructure.web;
 import com.powerassetintelligence.application.dto.TelemetryAcceptedResponse;
 import com.powerassetintelligence.application.dto.TelemetryCreateCommand;
 import com.powerassetintelligence.application.dto.TelemetryResponse;
+import com.powerassetintelligence.application.port.in.IngestTelemetryUseCase;
 import com.powerassetintelligence.application.port.out.PageResult;
 import com.powerassetintelligence.application.service.TelemetryService;
 import com.powerassetintelligence.infrastructure.web.dto.TelemetryCreateRequest;
@@ -23,9 +24,11 @@ import org.springframework.web.bind.annotation.RestController;
 public class TelemetryController {
 
     private final TelemetryService telemetryService;
+    private final IngestTelemetryUseCase ingestTelemetryUseCase;
 
-    public TelemetryController(TelemetryService telemetryService) {
+    public TelemetryController(TelemetryService telemetryService, IngestTelemetryUseCase ingestTelemetryUseCase) {
         this.telemetryService = telemetryService;
+        this.ingestTelemetryUseCase = ingestTelemetryUseCase;
     }
 
     /**
@@ -43,8 +46,7 @@ public class TelemetryController {
      */
     @PostMapping("/telemetry")
     public ResponseEntity<TelemetryAcceptedResponse> create(@Valid @RequestBody TelemetryCreateRequest request) {
-        TelemetryCreateCommand command = TelemetryWebMapper.toCommand(request);
-        TelemetryAcceptedResponse response = telemetryService.ingest(command);
+        TelemetryAcceptedResponse response = ingestTelemetryUseCase.execute(TelemetryWebMapper.toCommand(request));
         return ResponseEntity.accepted().body(response);
     }
 

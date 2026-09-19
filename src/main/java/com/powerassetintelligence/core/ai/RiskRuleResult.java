@@ -1,5 +1,6 @@
 package com.powerassetintelligence.core.ai;
 
+import com.powerassetintelligence.domain.model.RiskFactor;
 import java.math.BigDecimal;
 import java.util.List;
 

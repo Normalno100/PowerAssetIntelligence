@@ -3,7 +3,7 @@ package com.powerassetintelligence.unit;
 import com.powerassetintelligence.application.port.out.MaintenanceRepositoryPort;
 import com.powerassetintelligence.application.port.out.TelemetryRepositoryPort;
 import com.powerassetintelligence.application.service.RiskFeaturesExtractor;
-import com.powerassetintelligence.application.dto.RiskFeatures;
+import com.powerassetintelligence.domain.model.RiskFeatures;
 import com.powerassetintelligence.domain.model.Asset;
 import com.powerassetintelligence.domain.model.AssetCriticality;
 import com.powerassetintelligence.domain.model.AssetStatus;

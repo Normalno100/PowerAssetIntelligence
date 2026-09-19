@@ -1,7 +1,5 @@
 package com.powerassetintelligence.domain.model;
 
-import com.powerassetintelligence.core.ai.RiskAssessmentSnapshot;
-import com.powerassetintelligence.core.ai.RiskFactor;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;

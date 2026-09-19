@@ -9,7 +9,7 @@ import com.powerassetintelligence.application.port.out.RiskAssessmentRepositoryP
 import com.powerassetintelligence.core.ai.RiskChangeDirection;
 import com.powerassetintelligence.domain.model.RiskAssessment;
 import com.powerassetintelligence.domain.model.RiskLevel;
-import com.powerassetintelligence.core.ai.RiskFactor;
+import com.powerassetintelligence.domain.model.RiskFactor;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.ArrayList;

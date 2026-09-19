@@ -5,13 +5,14 @@ import com.powerassetintelligence.application.dto.RiskAssessmentResponse;
 import com.powerassetintelligence.application.dto.RiskAssessmentSnapshotResponse;
 import com.powerassetintelligence.application.dto.RiskFactorResponse;
 import com.powerassetintelligence.application.dto.RiskFeaturesResponse;
+import com.powerassetintelligence.application.port.in.AssessRiskUseCase;
 import com.powerassetintelligence.application.port.out.PageRequest;
 import com.powerassetintelligence.application.port.out.PageResult;
 import com.powerassetintelligence.application.port.out.RiskAssessmentRepositoryPort;
-import com.powerassetintelligence.application.dto.RiskFeatures;
+import com.powerassetintelligence.domain.model.RiskFeatures;
 import com.powerassetintelligence.application.dto.RiskScoringResult;
 import com.powerassetintelligence.core.ai.CoreRiskScoringPort;
-import com.powerassetintelligence.core.ai.RiskAssessmentSnapshot;
+import com.powerassetintelligence.domain.model.RiskAssessmentSnapshot;
 import com.powerassetintelligence.core.ai.RiskExplanationResult;
 import com.powerassetintelligence.core.ai.RiskExplanationService;
 import com.powerassetintelligence.domain.model.Asset;
@@ -24,7 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Transactional(readOnly = true)
-public class RiskAnalysisService {
+public class RiskAnalysisService implements AssessRiskUseCase {
 
     private final AssetService assetService;
     private final RiskFeaturesExtractor riskFeaturesExtractor;
@@ -49,7 +50,12 @@ public class RiskAnalysisService {
         this.clock = clock;
     }
 
+    @Override
     @Transactional
+    public RiskAssessmentDetailsResponse execute(UUID assetId) {
+        return assess(assetId);
+    }
+
     public RiskAssessmentDetailsResponse assess(UUID assetId) {
         Asset asset = assetService.getAsset(assetId);
         RiskFeaturesExtractor.ExtractResult extractResult = riskFeaturesExtractor.extractWithSnapshot(asset);

@@ -38,7 +38,7 @@ public record RiskAssessmentSnapshotResponse(
     /**
      * Creates a snapshot response from a domain snapshot.
      */
-    public static RiskAssessmentSnapshotResponse from(com.powerassetintelligence.core.ai.RiskAssessmentSnapshot snapshot) {
+    public static RiskAssessmentSnapshotResponse from(com.powerassetintelligence.domain.model.RiskAssessmentSnapshot snapshot) {
         if (snapshot == null) {
             return null;
         }

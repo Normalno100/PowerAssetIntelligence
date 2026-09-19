@@ -1,7 +1,7 @@
 package com.powerassetintelligence.infrastructure.persistence.entity;
 
-import com.powerassetintelligence.core.ai.RiskAssessmentSnapshot;
-import com.powerassetintelligence.core.ai.RiskFactor;
+import com.powerassetintelligence.domain.model.RiskAssessmentSnapshot;
+import com.powerassetintelligence.domain.model.RiskFactor;
 import com.powerassetintelligence.domain.model.RiskLevel;
 import com.powerassetintelligence.infrastructure.persistence.converter.RiskAssessmentSnapshotConverter;
 import com.powerassetintelligence.infrastructure.persistence.converter.RiskFactorConverter;

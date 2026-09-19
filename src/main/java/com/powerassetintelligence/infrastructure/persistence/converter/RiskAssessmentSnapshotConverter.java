@@ -2,7 +2,7 @@ package com.powerassetintelligence.infrastructure.persistence.converter;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.powerassetintelligence.core.ai.RiskAssessmentSnapshot;
+import com.powerassetintelligence.domain.model.RiskAssessmentSnapshot;
 import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Converter;
 

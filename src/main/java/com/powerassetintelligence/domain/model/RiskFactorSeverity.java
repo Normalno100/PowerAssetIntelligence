@@ -1,4 +1,4 @@
-package com.powerassetintelligence.core.ai;
+package com.powerassetintelligence.domain.model;
 
 /**
  * Severity level of a risk factor.

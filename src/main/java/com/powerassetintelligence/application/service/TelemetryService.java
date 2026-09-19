@@ -3,6 +3,7 @@ package com.powerassetintelligence.application.service;
 import com.powerassetintelligence.application.dto.TelemetryAcceptedResponse;
 import com.powerassetintelligence.application.dto.TelemetryCreateCommand;
 import com.powerassetintelligence.application.dto.TelemetryResponse;
+import com.powerassetintelligence.application.port.in.IngestTelemetryUseCase;
 import com.powerassetintelligence.application.port.out.TelemetryEventPublisher;
 import com.powerassetintelligence.application.port.out.TelemetryRepositoryPort;
 import com.powerassetintelligence.application.port.out.PageRequest;
@@ -17,7 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Transactional(readOnly = true)
-public class TelemetryService {
+public class TelemetryService implements IngestTelemetryUseCase {
 
     private final AssetService assetService;
     private final TelemetryRepositoryPort telemetryRecordRepository;
@@ -31,6 +32,11 @@ public class TelemetryService {
         this.assetService = assetService;
         this.telemetryRecordRepository = telemetryRecordRepository;
         this.telemetryEventPublisher = telemetryEventPublisher;
+    }
+
+    @Override
+    public TelemetryAcceptedResponse execute(TelemetryCreateCommand command) {
+        return ingest(command);
     }
 
     /**

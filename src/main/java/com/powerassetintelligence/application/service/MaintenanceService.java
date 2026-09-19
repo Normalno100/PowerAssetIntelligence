@@ -4,6 +4,7 @@ import com.powerassetintelligence.application.dto.MaintenanceCreateCommand;
 import com.powerassetintelligence.application.dto.MaintenanceResponse;
 import com.powerassetintelligence.domain.model.Asset;
 import com.powerassetintelligence.domain.model.MaintenanceRecord;
+import com.powerassetintelligence.application.port.in.RecordMaintenanceUseCase;
 import com.powerassetintelligence.application.port.out.AssetRepositoryPort;
 import com.powerassetintelligence.application.port.out.MaintenanceRepositoryPort;
 import com.powerassetintelligence.application.port.out.PageRequest;
@@ -15,7 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Transactional(readOnly = true)
-public class MaintenanceService {
+public class MaintenanceService implements RecordMaintenanceUseCase {
 
     private final AssetRepositoryPort assetRepositoryPort;
     private final MaintenanceRepositoryPort maintenanceRecordRepository;
@@ -25,7 +26,12 @@ public class MaintenanceService {
         this.maintenanceRecordRepository = maintenanceRecordRepository;
     }
 
+    @Override
     @Transactional
+    public MaintenanceResponse execute(UUID assetId, MaintenanceCreateCommand command) {
+        return create(assetId, command);
+    }
+
     public MaintenanceResponse create(UUID assetId, MaintenanceCreateCommand command) {
         Asset asset = assetRepositoryPort.findById(assetId)
                 .orElseThrow(() -> new ResourceNotFoundException("Asset not found: " + assetId));

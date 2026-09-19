@@ -13,8 +13,8 @@ import com.powerassetintelligence.application.port.out.RiskAssessmentRepositoryP
 import com.powerassetintelligence.application.service.AssetService;
 import com.powerassetintelligence.application.service.ResourceNotFoundException;
 import com.powerassetintelligence.application.service.RiskHistoryService;
-import com.powerassetintelligence.core.ai.RiskFactor;
-import com.powerassetintelligence.core.ai.RiskFactorSeverity;
+import com.powerassetintelligence.domain.model.RiskFactor;
+import com.powerassetintelligence.domain.model.RiskFactorSeverity;
 import com.powerassetintelligence.core.ai.TrendDirection;
 import com.powerassetintelligence.domain.model.RiskAssessment;
 import com.powerassetintelligence.domain.model.RiskLevel;

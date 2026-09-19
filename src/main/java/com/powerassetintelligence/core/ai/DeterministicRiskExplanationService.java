@@ -1,6 +1,6 @@
 package com.powerassetintelligence.core.ai;
 
-import com.powerassetintelligence.application.dto.RiskFeatures;
+import com.powerassetintelligence.domain.model.RiskFeatures;
 import com.powerassetintelligence.application.dto.RiskScoringResult;
 import com.powerassetintelligence.domain.model.RiskLevel;
 import java.math.BigDecimal;

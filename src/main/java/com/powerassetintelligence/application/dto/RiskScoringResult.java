@@ -37,6 +37,6 @@ public record RiskScoringResult(
         /**
          * Ordered list of contributing risk factors.
          */
-        List<com.powerassetintelligence.core.ai.RiskFactor> riskFactors
+        List<com.powerassetintelligence.domain.model.RiskFactor> riskFactors
 ) {
 }

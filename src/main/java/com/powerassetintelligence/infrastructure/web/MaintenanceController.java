@@ -1,6 +1,7 @@
 package com.powerassetintelligence.infrastructure.web;
 
 import com.powerassetintelligence.application.dto.MaintenanceResponse;
+import com.powerassetintelligence.application.port.in.RecordMaintenanceUseCase;
 import com.powerassetintelligence.application.port.out.PageResult;
 import com.powerassetintelligence.infrastructure.web.dto.MaintenanceCreateRequest;
 import com.powerassetintelligence.application.service.MaintenanceService;
@@ -22,9 +23,11 @@ import org.springframework.web.bind.annotation.RestController;
 public class MaintenanceController {
 
     private final MaintenanceService maintenanceService;
+    private final RecordMaintenanceUseCase recordMaintenanceUseCase;
 
-    public MaintenanceController(MaintenanceService maintenanceService) {
+    public MaintenanceController(MaintenanceService maintenanceService, RecordMaintenanceUseCase recordMaintenanceUseCase) {
         this.maintenanceService = maintenanceService;
+        this.recordMaintenanceUseCase = recordMaintenanceUseCase;
     }
 
     @PostMapping
@@ -32,7 +35,7 @@ public class MaintenanceController {
             @PathVariable UUID assetId,
             @Valid @RequestBody MaintenanceCreateRequest request
     ) {
-        MaintenanceResponse response = maintenanceService.create(assetId, MaintenanceWebMapper.toCreateCommand(request));
+        MaintenanceResponse response = recordMaintenanceUseCase.execute(assetId, MaintenanceWebMapper.toCreateCommand(request));
         return ResponseEntity.created(URI.create("/api/v1/assets/" + assetId + "/maintenance-records/" + response.id()))
                 .body(response);
     }

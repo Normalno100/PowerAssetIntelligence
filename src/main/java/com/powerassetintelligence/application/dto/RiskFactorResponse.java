@@ -1,7 +1,7 @@
 package com.powerassetintelligence.application.dto;
 
-import com.powerassetintelligence.core.ai.RiskFactor;
-import com.powerassetintelligence.core.ai.RiskFactorSeverity;
+import com.powerassetintelligence.domain.model.RiskFactor;
+import com.powerassetintelligence.domain.model.RiskFactorSeverity;
 import java.math.BigDecimal;
 
 /**

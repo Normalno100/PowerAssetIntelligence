@@ -1,4 +1,4 @@
-package com.powerassetintelligence.core.ai;
+package com.powerassetintelligence.domain.model;
 
 import java.math.BigDecimal;
 

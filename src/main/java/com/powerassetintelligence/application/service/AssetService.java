@@ -7,6 +7,7 @@ import com.powerassetintelligence.domain.model.Asset;
 import com.powerassetintelligence.domain.model.AssetCriticality;
 import com.powerassetintelligence.domain.model.AssetStatus;
 import com.powerassetintelligence.domain.model.AssetType;
+import com.powerassetintelligence.application.port.in.RegisterAssetUseCase;
 import com.powerassetintelligence.application.port.out.AssetRepositoryPort;
 import com.powerassetintelligence.application.port.out.PageRequest;
 import com.powerassetintelligence.application.port.out.PageResult;
@@ -18,7 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Transactional(readOnly = true)
-public class AssetService {
+public class AssetService implements RegisterAssetUseCase {
 
     private final AssetRepositoryPort assetRepository;
 
@@ -26,7 +27,12 @@ public class AssetService {
         this.assetRepository = assetRepository;
     }
 
+    @Override
     @Transactional
+    public AssetResponse execute(AssetCreateCommand command) {
+        return create(command);
+    }
+
     public AssetResponse create(AssetCreateCommand command) {
         Asset asset = new Asset(
                 UUID.randomUUID(),

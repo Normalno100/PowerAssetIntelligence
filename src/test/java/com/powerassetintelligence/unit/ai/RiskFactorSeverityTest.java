@@ -3,7 +3,7 @@ package com.powerassetintelligence.unit.ai;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-import com.powerassetintelligence.core.ai.RiskFactorSeverity;
+import com.powerassetintelligence.domain.model.RiskFactorSeverity;
 import org.junit.jupiter.api.Test;
 
 class RiskFactorSeverityTest {

@@ -1,7 +1,7 @@
 package com.powerassetintelligence.unit;
 
-import com.powerassetintelligence.core.ai.RiskAssessmentSnapshot;
-import com.powerassetintelligence.application.dto.RiskFeatures;
+import com.powerassetintelligence.domain.model.RiskAssessmentSnapshot;
+import com.powerassetintelligence.domain.model.RiskFeatures;
 import com.powerassetintelligence.domain.model.AssetStatus;
 import com.powerassetintelligence.domain.model.AssetType;
 import com.powerassetintelligence.domain.model.AssetCriticality;

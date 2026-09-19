@@ -5,8 +5,8 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import com.powerassetintelligence.core.ai.RiskFactor;
-import com.powerassetintelligence.core.ai.RiskFactorSeverity;
+import com.powerassetintelligence.domain.model.RiskFactor;
+import com.powerassetintelligence.domain.model.RiskFactorSeverity;
 import com.powerassetintelligence.core.ai.RiskRuleResult;
 import java.math.BigDecimal;
 import java.util.List;

@@ -2,7 +2,7 @@ package com.powerassetintelligence.infrastructure.persistence.converter;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.powerassetintelligence.core.ai.RiskFactor;
+import com.powerassetintelligence.domain.model.RiskFactor;
 import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Converter;
 import java.util.List;

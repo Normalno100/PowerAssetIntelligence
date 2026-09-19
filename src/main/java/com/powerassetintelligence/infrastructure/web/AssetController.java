@@ -1,6 +1,7 @@
 package com.powerassetintelligence.infrastructure.web;
 
 import com.powerassetintelligence.application.dto.AssetResponse;
+import com.powerassetintelligence.application.port.in.RegisterAssetUseCase;
 import com.powerassetintelligence.application.port.out.PageResult;
 import com.powerassetintelligence.application.service.AssetService;
 import com.powerassetintelligence.domain.model.AssetCriticality;
@@ -28,14 +29,16 @@ import org.springframework.web.bind.annotation.RestController;
 public class AssetController {
 
     private final AssetService assetService;
+    private final RegisterAssetUseCase registerAssetUseCase;
 
-    public AssetController(AssetService assetService) {
+    public AssetController(AssetService assetService, RegisterAssetUseCase registerAssetUseCase) {
         this.assetService = assetService;
+        this.registerAssetUseCase = registerAssetUseCase;
     }
 
     @PostMapping
     public ResponseEntity<AssetResponse> create(@Valid @RequestBody AssetCreateRequest request) {
-        AssetResponse response = assetService.create(AssetWebMapper.toCreateCommand(request));
+        AssetResponse response = registerAssetUseCase.execute(AssetWebMapper.toCreateCommand(request));
         return ResponseEntity.created(URI.create("/api/v1/assets/" + response.id())).body(response);
     }
 

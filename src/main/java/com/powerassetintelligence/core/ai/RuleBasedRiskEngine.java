@@ -1,6 +1,6 @@
 package com.powerassetintelligence.core.ai;
 
-import com.powerassetintelligence.application.dto.RiskFeatures;
+import com.powerassetintelligence.domain.model.RiskFeatures;
 import com.powerassetintelligence.application.dto.RiskScoringResult;
 import com.powerassetintelligence.core.ai.rule.AgeRiskRule;
 import com.powerassetintelligence.core.ai.rule.AgingOverheatRepairRiskRule;
@@ -11,6 +11,7 @@ import com.powerassetintelligence.core.ai.rule.RepairHistoryRiskRule;
 import com.powerassetintelligence.core.ai.rule.SustainedHighTemperatureRiskRule;
 import com.powerassetintelligence.core.ai.rule.TemperatureTrendRiskRule;
 import com.powerassetintelligence.domain.model.AssetCriticality;
+import com.powerassetintelligence.domain.model.RiskFactor;
 import com.powerassetintelligence.domain.model.RiskLevel;
 import java.math.BigDecimal;
 import java.math.RoundingMode;

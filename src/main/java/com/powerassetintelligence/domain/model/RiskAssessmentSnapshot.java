@@ -1,9 +1,5 @@
-package com.powerassetintelligence.core.ai;
+package com.powerassetintelligence.domain.model;
 
-import com.powerassetintelligence.application.dto.RiskFeatures;
-import com.powerassetintelligence.domain.model.AssetCriticality;
-import com.powerassetintelligence.domain.model.AssetStatus;
-import com.powerassetintelligence.domain.model.AssetType;
 import java.math.BigDecimal;
 import java.util.UUID;
 

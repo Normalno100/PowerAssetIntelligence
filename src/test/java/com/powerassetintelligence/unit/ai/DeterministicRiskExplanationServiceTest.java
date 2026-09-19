@@ -6,7 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.powerassetintelligence.core.ai.DeterministicRiskExplanationService;
-import com.powerassetintelligence.application.dto.RiskFeatures;
+import com.powerassetintelligence.domain.model.RiskFeatures;
 import com.powerassetintelligence.application.dto.RiskScoringResult;
 import com.powerassetintelligence.core.ai.RuleBasedRiskEngine;
 import com.powerassetintelligence.domain.model.AssetCriticality;

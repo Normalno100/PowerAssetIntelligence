@@ -4,6 +4,7 @@ import com.powerassetintelligence.application.dto.RiskAssessmentComparisonRespon
 import com.powerassetintelligence.application.dto.RiskAssessmentDetailsResponse;
 import com.powerassetintelligence.application.dto.RiskAssessmentResponse;
 import com.powerassetintelligence.application.dto.RiskTrendResponse;
+import com.powerassetintelligence.application.port.in.AssessRiskUseCase;
 import com.powerassetintelligence.application.port.out.PageRequest;
 import com.powerassetintelligence.application.port.out.PageResult;
 import com.powerassetintelligence.application.service.RiskAnalysisService;
@@ -27,22 +28,25 @@ import org.springframework.web.bind.annotation.RestController;
 public class RiskAnalysisController {
 
     private final RiskAnalysisService riskAnalysisService;
+    private final AssessRiskUseCase assessRiskUseCase;
     private final RiskAssessmentComparisonService comparisonService;
     private final RiskHistoryService riskHistoryService;
 
     public RiskAnalysisController(
             RiskAnalysisService riskAnalysisService,
+            AssessRiskUseCase assessRiskUseCase,
             RiskAssessmentComparisonService comparisonService,
             RiskHistoryService riskHistoryService
     ) {
         this.riskAnalysisService = riskAnalysisService;
+        this.assessRiskUseCase = assessRiskUseCase;
         this.comparisonService = comparisonService;
         this.riskHistoryService = riskHistoryService;
     }
 
     @PostMapping("/assets/{assetId}/risk-assessments")
     public RiskAssessmentDetailsResponse createAssessment(@PathVariable UUID assetId) {
-        return riskAnalysisService.assess(assetId);
+        return assessRiskUseCase.execute(assetId);
     }
 
     @GetMapping("/assets/{assetId}/risk-assessments/latest")

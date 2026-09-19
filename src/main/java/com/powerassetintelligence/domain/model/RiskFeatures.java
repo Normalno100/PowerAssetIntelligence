@@ -1,11 +1,12 @@
-package com.powerassetintelligence.application.dto;
+package com.powerassetintelligence.domain.model;
 
-import com.powerassetintelligence.domain.model.AssetCriticality;
-import com.powerassetintelligence.domain.model.AssetStatus;
-import com.powerassetintelligence.domain.model.AssetType;
 import java.math.BigDecimal;
 import java.util.UUID;
 
+/**
+ * Feature vector extracted from telemetry, maintenance, and asset data
+ * for use by the risk scoring engine.
+ */
 public record RiskFeatures(
         UUID assetId,
         AssetType assetType,

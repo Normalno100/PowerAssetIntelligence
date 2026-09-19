@@ -84,7 +84,20 @@ class LayerDependencyTest {
                     .as("core.ai не должен зависеть от Spring");
 
     // =========================================================================
-    // 4. infrastructure — самый внешний слой, может зависеть от application /
+    // 4. domain — не зависит от core.ai (inward dependency rule)
+    // =========================================================================
+    @ArchTest
+    ArchRule domainNoCoreDependency =
+            noClasses()
+                    .that()
+                    .resideInAPackage("..domain..")
+                    .should()
+                    .dependOnClassesThat()
+                    .resideInAPackage("..core.ai..")
+                    .as("domain не должен зависеть от core.ai — зависимости направлены внутрь: core -> domain");
+
+    // =========================================================================
+    // 5. infrastructure — самый внешний слой, может зависеть от application /
     //    domain / core.ai. Здесь мы НЕ ставим запретов — это логическое
     //    подтверждение архитектуры.
     // =========================================================================
