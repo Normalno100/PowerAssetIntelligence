@@ -91,7 +91,7 @@ class RiskFeaturesExtractorTest {
         when(maintenanceRepository.countByAssetIdAndRepairDateGreaterThanEqual(TEST_ASSET_ID, LocalDate.of(2024, 6, 15)))
                 .thenReturn(3L);
 
-        RiskFeatures features = extractor.extract(asset);
+        RiskFeatures features = extractor.extractWithSnapshot(asset).features();
 
         assertThat(features.assetId()).isEqualTo(TEST_ASSET_ID);
         assertThat(features.assetType()).isEqualTo(AssetType.TRANSFORMER);
@@ -132,7 +132,7 @@ class RiskFeaturesExtractorTest {
         when(maintenanceRepository.countByAssetIdAndRepairDateGreaterThanEqual(TEST_ASSET_ID, LocalDate.of(2024, 6, 15)))
                 .thenReturn(1L);
 
-        RiskFeatures features = extractor.extract(asset);
+        RiskFeatures features = extractor.extractWithSnapshot(asset).features();
 
         // Latest
         assertThat(features.latestTemperatureCelsius()).isEqualByComparingTo(new BigDecimal("80"));
@@ -176,7 +176,7 @@ class RiskFeaturesExtractorTest {
         when(maintenanceRepository.countByAssetIdAndRepairDateGreaterThanEqual(TEST_ASSET_ID, LocalDate.of(2024, 6, 15)))
                 .thenReturn(0L);
 
-        RiskFeatures features = extractor.extract(asset);
+        RiskFeatures features = extractor.extractWithSnapshot(asset).features();
 
         // Latest = last (t3)
         assertThat(features.latestTemperatureCelsius()).isEqualByComparingTo(new BigDecimal("90"));
@@ -212,7 +212,7 @@ class RiskFeaturesExtractorTest {
         when(maintenanceRepository.countByAssetIdAndRepairDateGreaterThanEqual(TEST_ASSET_ID, LocalDate.of(2024, 6, 15)))
                 .thenReturn(2L);
 
-        RiskFeatures features = extractor.extract(asset);
+        RiskFeatures features = extractor.extractWithSnapshot(asset).features();
 
         // Latest will be the old record (findFirst returns oldest by timestamp desc)
         assertThat(features.latestTemperatureCelsius()).isEqualByComparingTo(new BigDecimal("95"));
@@ -254,7 +254,7 @@ class RiskFeaturesExtractorTest {
         when(maintenanceRepository.countByAssetIdAndRepairDateGreaterThanEqual(TEST_ASSET_ID, LocalDate.of(2024, 6, 15)))
                 .thenReturn(0L);
 
-        RiskFeatures features = extractor.extract(asset);
+        RiskFeatures features = extractor.extractWithSnapshot(asset).features();
 
         // Temperature: non-null non-zero values = [70, 90], avg = 80, max = 90
         assertThat(features.averageTemperatureCelsius()).isEqualByComparingTo(new BigDecimal("80"));
@@ -283,8 +283,8 @@ class RiskFeaturesExtractorTest {
         when(maintenanceRepository.countByAssetIdAndRepairDateGreaterThanEqual(TEST_ASSET_ID, LocalDate.of(2024, 6, 15)))
                 .thenReturn(5L);
 
-        RiskFeatures result1 = extractor.extract(asset);
-        RiskFeatures result2 = extractor.extract(asset);
+        RiskFeatures result1 = extractor.extractWithSnapshot(asset).features();
+        RiskFeatures result2 = extractor.extractWithSnapshot(asset).features();
 
         assertThat(result1).isEqualTo(result2);
         assertThat(result1.averageTemperatureCelsius()).isEqualByComparingTo(new BigDecimal("75"));
@@ -316,7 +316,7 @@ class RiskFeaturesExtractorTest {
         when(maintenanceRepository.countByAssetIdAndRepairDateGreaterThanEqual(TEST_ASSET_ID, LocalDate.of(2024, 6, 15)))
                 .thenReturn(0L);
 
-        RiskFeatures features = extractor.extract(asset);
+        RiskFeatures features = extractor.extractWithSnapshot(asset).features();
 
         assertThat(features.temperatureTrendCelsiusPerHour())
                 .isNotNull()
@@ -343,7 +343,7 @@ class RiskFeaturesExtractorTest {
         when(maintenanceRepository.countByAssetIdAndRepairDateGreaterThanEqual(TEST_ASSET_ID, LocalDate.of(2024, 6, 15)))
                 .thenReturn(0L);
 
-        RiskFeatures features = extractor.extract(asset);
+        RiskFeatures features = extractor.extractWithSnapshot(asset).features();
 
         assertThat(features.temperatureTrendCelsiusPerHour())
                 .isNotNull()
@@ -370,7 +370,7 @@ class RiskFeaturesExtractorTest {
         when(maintenanceRepository.countByAssetIdAndRepairDateGreaterThanEqual(TEST_ASSET_ID, LocalDate.of(2024, 6, 15)))
                 .thenReturn(0L);
 
-        RiskFeatures features = extractor.extract(asset);
+        RiskFeatures features = extractor.extractWithSnapshot(asset).features();
 
         assertThat(features.temperatureTrendCelsiusPerHour())
                 .isNotNull()
@@ -394,7 +394,7 @@ class RiskFeaturesExtractorTest {
         when(maintenanceRepository.countByAssetIdAndRepairDateGreaterThanEqual(TEST_ASSET_ID, LocalDate.of(2024, 6, 15)))
                 .thenReturn(0L);
 
-        RiskFeatures features = extractor.extract(asset);
+        RiskFeatures features = extractor.extractWithSnapshot(asset).features();
 
         assertThat(features.temperatureTrendCelsiusPerHour()).isNull();
         assertThat(features.loadTrendPercentPerHour()).isNull();
@@ -420,7 +420,7 @@ class RiskFeaturesExtractorTest {
         when(maintenanceRepository.countByAssetIdAndRepairDateGreaterThanEqual(TEST_ASSET_ID, LocalDate.of(2024, 6, 15)))
                 .thenReturn(0L);
 
-        RiskFeatures features = extractor.extract(asset);
+        RiskFeatures features = extractor.extractWithSnapshot(asset).features();
 
         assertThat(features.temperatureTrendCelsiusPerHour())
                 .isNotNull()
@@ -452,7 +452,7 @@ class RiskFeaturesExtractorTest {
         when(maintenanceRepository.countByAssetIdAndRepairDateGreaterThanEqual(TEST_ASSET_ID, LocalDate.of(2024, 6, 15)))
                 .thenReturn(0L);
 
-        RiskFeatures features = extractor.extract(asset);
+        RiskFeatures features = extractor.extractWithSnapshot(asset).features();
 
         // Temperature: (70-60) / 4h = +2.5
         assertThat(features.temperatureTrendCelsiusPerHour())
@@ -488,7 +488,7 @@ class RiskFeaturesExtractorTest {
         when(maintenanceRepository.countByAssetIdAndRepairDateGreaterThanEqual(TEST_ASSET_ID, LocalDate.of(2024, 6, 15)))
                 .thenReturn(0L);
 
-        RiskFeatures features = extractor.extract(asset);
+        RiskFeatures features = extractor.extractWithSnapshot(asset).features();
 
         // Temperature: first=60 at t1, last=72 at t3, duration=4h → (72-60)/4 = +3.0
         assertThat(features.temperatureTrendCelsiusPerHour())
@@ -520,7 +520,7 @@ class RiskFeaturesExtractorTest {
         when(maintenanceRepository.countByAssetIdAndRepairDateGreaterThanEqual(TEST_ASSET_ID, LocalDate.of(2024, 6, 15)))
                 .thenReturn(0L);
 
-        RiskFeatures features = extractor.extract(asset);
+        RiskFeatures features = extractor.extractWithSnapshot(asset).features();
 
         assertThat(features.loadTrendPercentPerHour())
                 .isNotNull()

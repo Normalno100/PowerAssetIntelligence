@@ -48,21 +48,6 @@ public class RiskFeaturesExtractor {
     }
 
     /**
-     * Extracts all risk features for the given asset.
-     * <p>
-     * <b>Deprecated:</b> Use {@link #extractWithSnapshot(Asset)} for full assessment pipeline.
-     * Kept for backward compatibility with existing tests and callers.
-     *
-     * @param asset the asset to extract features for
-     * @return risk features (without snapshot)
-     * @deprecated use {@link #extractWithSnapshot(Asset)} instead
-     */
-    @Deprecated
-    public RiskFeatures extract(Asset asset) {
-        return extractWithSnapshot(asset).features();
-    }
-
-    /**
      * Extracts all risk features for the given asset along with an immutable snapshot.
      * <p>
      * The snapshot captures the exact input data used to compute the risk assessment,
