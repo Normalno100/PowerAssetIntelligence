@@ -3,14 +3,15 @@ import { useParams } from 'react-router-dom';
 import { Line } from 'react-chartjs-2';
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Tooltip } from 'chart.js';
 import { api } from '../services/api';
-import type { Asset, RiskAssessmentDetails, TelemetryRecord } from '../types/api';
+import type { Asset, RiskAssessment, TelemetryRecord } from '../types/api';
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Tooltip);
 
 export function AssetDetailsPage() {
   const { id = '' } = useParams();
   const [asset, setAsset] = useState<Asset | null>(null);
   const [telemetry, setTelemetry] = useState<TelemetryRecord[]>([]);
-  const [risk, setRisk] = useState<RiskAssessmentDetails | null>(null);
+  const [risk, setRisk] = useState<RiskAssessment | null>(null);
+  const [riskLoading, setRiskLoading] = useState(false);
 
   useEffect(() => {
     api.getAsset(id)
@@ -19,10 +20,18 @@ export function AssetDetailsPage() {
     api.getTelemetry(id)
       .then((res) => setTelemetry(res.content))
       .catch(console.error);
-    api.createAssessment(id)
+    api.getLatestRisk(id)
       .then(setRisk)
       .catch(console.error);
   }, [id]);
+
+  const handleRunAssessment = () => {
+    setRiskLoading(true);
+    api.createAssessment(id)
+      .then((details) => setRisk(details.assessment))
+      .catch(console.error)
+      .finally(() => setRiskLoading(false));
+  };
 
   return (
     <div className="space-y-4">
@@ -34,30 +43,49 @@ export function AssetDetailsPage() {
       <section className="rounded-xl border border-slate-800 bg-slate-900 p-4">
         <h3 className="mb-3 font-semibold">AI Risk Explainability</h3>
         {risk === null ? (
-          <p className="text-sm text-slate-500">Loading risk assessment…</p>
+          riskLoading ? (
+            <p className="text-sm text-slate-500">Creating assessment…</p>
+          ) : (
+            <div className="space-y-3">
+              <p className="text-sm text-slate-500">Risk assessment not yet available for this asset.</p>
+              <button
+                onClick={handleRunAssessment}
+                disabled={riskLoading}
+                className="rounded-lg bg-violet-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-violet-500 disabled:opacity-50"
+              >
+                {riskLoading ? 'Running…' : 'Run Risk Assessment'}
+              </button>
+            </div>
+          )
         ) : (
           <>
             <p className="mb-3 text-sm text-slate-300">
               Risk score:{' '}
               <span className="font-bold text-red-400">
-                {risk.assessment.riskScore.toFixed(1)}
+                {risk.riskScore !== null && risk.riskScore !== undefined
+                  ? risk.riskScore.toFixed(1)
+                  : '—'}
               </span>
             </p>
             <p className="mb-3 text-sm text-slate-300">
               Risk level:{' '}
-              <span className="font-semibold text-yellow-400">{risk.assessment.riskLevel}</span>
+              <span className="font-semibold text-yellow-400">{risk.riskLevel ?? '—'}</span>
             </p>
             <h4 className="mb-2 text-sm font-medium text-slate-200">Risk factors</h4>
             <ul className="space-y-2 text-sm text-slate-300">
-              {risk.assessment.riskFactors.map((f) => (
+              {risk.riskFactors.map((f) => (
                 <li key={f.code} className="rounded border border-slate-700 p-2">
-                  {f.code}: {f.severity} (contribution {f.contribution.toFixed(2)}) — {f.description}
+                  {f.code}: {f.severity} (contribution{' '}
+                  {f.contribution !== null && f.contribution !== undefined
+                    ? f.contribution.toFixed(2)
+                    : '—'}
+                  ) — {f.description}
                 </li>
               ))}
             </ul>
             <h4 className="mb-2 mt-4 text-sm font-medium text-slate-200">Recommendations</h4>
             <ul className="list-inside list-disc text-sm text-slate-300">
-              {risk.assessment.recommendations.map((rec, idx) => (
+              {risk.recommendations.map((rec, idx) => (
                 <li key={idx}>{rec}</li>
               ))}
             </ul>
