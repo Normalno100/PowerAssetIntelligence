@@ -1,0 +1,13 @@
+{
+  "type": "TRANSFORMER",
+  "name": "TX-2026-001",
+  "installationDate": "2020-01-01",
+  "location": "West Grid",
+  "manufacturer": "Siemens",
+  "criticality": "HIGH",
+  "expectedServiceLifeYears": 30,
+  "technicalParameters": {
+    "kv": "220",
+    "cooling": "ONAN"
+  }
+}
