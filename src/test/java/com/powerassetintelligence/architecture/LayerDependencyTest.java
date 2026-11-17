@@ -101,4 +101,22 @@ class LayerDependencyTest {
     //    domain / core.ai. Здесь мы НЕ ставим запретов — это логическое
     //    подтверждение архитектуры.
     // =========================================================================
+
+    // =========================================================================
+    // 6. application-сервисы не должны зависеть друг от друга
+    //    (исключение: AssetService — это also application-service, но он
+    //     является контроллером порта RegisterAssetUseCase, поэтому
+    //     зависимость от него остальных сервисов — нарушение архитектуры)
+    // =========================================================================
+    @ArchTest
+    ArchRule applicationServicesNoCrossDependencies =
+            noClasses()
+                    .that()
+                    .resideInAPackage("..application.service..")
+                    .should()
+                    .dependOnClassesThat()
+                    .resideInAPackage("..application.service..")
+                    .andShould()
+                    .beAnnotatedWith(org.springframework.stereotype.Service.class)
+                    .as("application-сервисы не должны зависеть друг от друга");
 }

@@ -4,6 +4,7 @@ import com.powerassetintelligence.application.dto.TelemetryAcceptedResponse;
 import com.powerassetintelligence.application.dto.TelemetryCreateCommand;
 import com.powerassetintelligence.application.dto.TelemetryResponse;
 import com.powerassetintelligence.application.port.in.IngestTelemetryUseCase;
+import com.powerassetintelligence.application.port.out.AssetRepositoryPort;
 import com.powerassetintelligence.application.port.out.TelemetryEventPublisher;
 import com.powerassetintelligence.application.port.out.TelemetryRepositoryPort;
 import com.powerassetintelligence.application.port.out.PageRequest;
@@ -20,16 +21,16 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(readOnly = true)
 public class TelemetryService implements IngestTelemetryUseCase {
 
-    private final AssetService assetService;
+    private final AssetRepositoryPort assetRepository;
     private final TelemetryRepositoryPort telemetryRecordRepository;
     private final TelemetryEventPublisher telemetryEventPublisher;
 
     public TelemetryService(
-            AssetService assetService,
+            AssetRepositoryPort assetRepository,
             TelemetryRepositoryPort telemetryRecordRepository,
             TelemetryEventPublisher telemetryEventPublisher
     ) {
-        this.assetService = assetService;
+        this.assetRepository = assetRepository;
         this.telemetryRecordRepository = telemetryRecordRepository;
         this.telemetryEventPublisher = telemetryEventPublisher;
     }
@@ -85,7 +86,8 @@ public class TelemetryService implements IngestTelemetryUseCase {
     }
 
     private TelemetryResponse persistNewRecord(TelemetryCreateCommand request) {
-        Asset asset = assetService.getAsset(request.assetId());
+        Asset asset = assetRepository.findById(request.assetId())
+                .orElseThrow(() -> new ResourceNotFoundException("Asset not found: " + request.assetId()));
         if (asset.getStatus() == AssetStatus.DECOMMISSIONED) {
             throw new BusinessValidationException("Decommissioned assets cannot accept operational telemetry: " + asset.getId());
         }
@@ -108,14 +110,16 @@ public class TelemetryService implements IngestTelemetryUseCase {
     }
 
     public PageResult<TelemetryResponse> findByAsset(UUID assetId, PageRequest pageRequest) {
-        assetService.getAsset(assetId);
+        assetRepository.findById(assetId)
+                .orElseThrow(() -> new ResourceNotFoundException("Asset not found: " + assetId));
         var result = telemetryRecordRepository.findByAssetId(assetId, pageRequest);
         var content = result.content().stream().map(this::toResponse).toList();
         return new PageResult<>(content, result.page(), result.size(), result.totalElements(), result.totalPages());
     }
 
     public TelemetryResponse getLatest(UUID assetId) {
-        assetService.getAsset(assetId);
+        assetRepository.findById(assetId)
+                .orElseThrow(() -> new ResourceNotFoundException("Asset not found: " + assetId));
         return telemetryRecordRepository.findFirstByAssetIdOrderByTimestampDesc(assetId)
                 .map(this::toResponse)
                 .orElseThrow(() -> new ResourceNotFoundException("Telemetry not found for asset: " + assetId));

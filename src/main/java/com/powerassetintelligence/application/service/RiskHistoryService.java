@@ -2,6 +2,7 @@ package com.powerassetintelligence.application.service;
 
 import com.powerassetintelligence.application.dto.RiskTrendPoint;
 import com.powerassetintelligence.application.dto.RiskTrendResponse;
+import com.powerassetintelligence.application.port.out.AssetRepositoryPort;
 import com.powerassetintelligence.application.port.out.RiskAssessmentRepositoryPort;
 import com.powerassetintelligence.core.ai.RiskTrendCalculator;
 import com.powerassetintelligence.core.ai.TrendDirection;
@@ -20,7 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
  * <p>
  * Responsibilities:
  * <ul>
- *   <li>Validate asset existence via {@link AssetService}</li>
+ *   <li>Validate asset existence via {@link com.powerassetintelligence.application.port.out.AssetRepositoryPort}</li>
  *   <li>Fetch the last N risk assessments chronologically (oldest → newest)</li>
  *   <li>Delegate pure calculation to {@link RiskTrendCalculator}</li>
  *   <li>Map domain models to DTOs</li>
@@ -30,12 +31,12 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(readOnly = true)
 public class RiskHistoryService {
 
-    private final AssetService assetService;
+    private final AssetRepositoryPort assetRepository;
     private final RiskAssessmentRepositoryPort riskAssessmentRepositoryPort;
 
-    public RiskHistoryService(AssetService assetService,
+    public RiskHistoryService(AssetRepositoryPort assetRepository,
                               RiskAssessmentRepositoryPort riskAssessmentRepositoryPort) {
-        this.assetService = assetService;
+        this.assetRepository = assetRepository;
         this.riskAssessmentRepositoryPort = riskAssessmentRepositoryPort;
     }
 
@@ -48,7 +49,8 @@ public class RiskHistoryService {
      */
     public RiskTrendResponse getTrend(UUID assetId, int limit) {
         // 1. Verify asset exists
-        assetService.getAsset(assetId);
+        assetRepository.findById(assetId)
+                .orElseThrow(() -> new ResourceNotFoundException("Asset not found: " + assetId));
 
         // 2. Get assessments in chronological order (oldest → newest)
         List<RiskAssessment> allAssessments =

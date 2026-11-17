@@ -9,8 +9,8 @@ import static org.mockito.Mockito.when;
 
 import com.powerassetintelligence.application.dto.RiskAssessmentDetailsResponse;
 import com.powerassetintelligence.application.dto.RiskAssessmentResponse;
+import com.powerassetintelligence.application.port.out.AssetRepositoryPort;
 import com.powerassetintelligence.application.port.out.RiskAssessmentRepositoryPort;
-import com.powerassetintelligence.application.service.AssetService;
 import com.powerassetintelligence.application.service.RiskAnalysisService;
 import com.powerassetintelligence.application.service.RiskFeaturesExtractor;
 import com.powerassetintelligence.core.ai.CoreRiskScoringPort;
@@ -44,7 +44,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class RiskAnalysisServiceTest {
 
     @Mock
-    private AssetService assetService;
+    private AssetRepositoryPort assetRepository;
 
     @Mock
     private RiskFeaturesExtractor riskFeaturesExtractor;
@@ -71,7 +71,7 @@ class RiskAnalysisServiceTest {
     void setUp() {
         fixedClock = Clock.fixed(now, ZoneId.systemDefault());
         service = new RiskAnalysisService(
-                assetService,
+                assetRepository,
                 riskFeaturesExtractor,
                 riskAssessmentRepository,
                 riskEngine,
@@ -100,7 +100,7 @@ class RiskAnalysisServiceTest {
                 "rules-2026.05"
         );
 
-        when(assetService.getAsset(testAssetId)).thenReturn(asset);
+        when(assetRepository.findById(testAssetId)).thenReturn(java.util.Optional.of(asset));
         when(riskFeaturesExtractor.extractWithSnapshot(asset))
                 .thenReturn(new RiskFeaturesExtractor.ExtractResult(features, snapshot));
         when(riskEngine.score(features)).thenReturn(scoreResult);
@@ -156,7 +156,7 @@ class RiskAnalysisServiceTest {
         RiskFeatures features = createFeatures(testAssetId);
         RiskAssessmentSnapshot snapshot = RiskAssessmentSnapshot.from(features);
 
-        when(assetService.getAsset(testAssetId)).thenReturn(asset);
+        when(assetRepository.findById(testAssetId)).thenReturn(java.util.Optional.of(asset));
         when(riskFeaturesExtractor.extractWithSnapshot(asset))
                 .thenReturn(new RiskFeaturesExtractor.ExtractResult(features, snapshot));
         when(riskEngine.score(features)).thenReturn(scoreResult);
@@ -195,7 +195,7 @@ class RiskAnalysisServiceTest {
         RiskFeatures features = createFeatures(testAssetId);
         RiskAssessmentSnapshot snapshot = RiskAssessmentSnapshot.from(features);
 
-        when(assetService.getAsset(testAssetId)).thenReturn(asset);
+        when(assetRepository.findById(testAssetId)).thenReturn(java.util.Optional.of(asset));
         when(riskFeaturesExtractor.extractWithSnapshot(asset))
                 .thenReturn(new RiskFeaturesExtractor.ExtractResult(features, snapshot));
         when(riskEngine.score(features)).thenReturn(scoreResult);

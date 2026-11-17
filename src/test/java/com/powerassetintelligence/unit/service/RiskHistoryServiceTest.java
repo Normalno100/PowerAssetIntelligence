@@ -9,8 +9,8 @@ import static org.mockito.Mockito.when;
 
 import com.powerassetintelligence.application.dto.RiskTrendPoint;
 import com.powerassetintelligence.application.dto.RiskTrendResponse;
+import com.powerassetintelligence.application.port.out.AssetRepositoryPort;
 import com.powerassetintelligence.application.port.out.RiskAssessmentRepositoryPort;
-import com.powerassetintelligence.application.service.AssetService;
 import com.powerassetintelligence.application.service.ResourceNotFoundException;
 import com.powerassetintelligence.application.service.RiskHistoryService;
 import com.powerassetintelligence.domain.model.RiskFactor;
@@ -40,7 +40,7 @@ class RiskHistoryServiceTest {
     private static final Instant NOW = Instant.now();
 
     @Mock
-    private AssetService assetService;
+    private AssetRepositoryPort assetRepository;
 
     @Mock
     private RiskAssessmentRepositoryPort riskAssessmentRepositoryPort;
@@ -71,7 +71,7 @@ class RiskHistoryServiceTest {
     // ---------------------------------------------------------------------
     @Test
     void getTrend_emptyHistory_shouldReturnStableWithNulls() {
-        when(assetService.getAsset(ASSET_ID)).thenReturn(asset);
+        when(assetRepository.findById(ASSET_ID)).thenReturn(java.util.Optional.of(asset));
         when(riskAssessmentRepositoryPort.findByAssetIdOrderByAssessedAtAsc(ASSET_ID))
                 .thenReturn(List.of());
 
@@ -93,7 +93,7 @@ class RiskHistoryServiceTest {
     void getTrend_oneAssessment_shouldReturnSinglePointWithNullChanges() {
         RiskAssessment assessment = createAssessment(1, ASSET_ID, 42, RiskLevel.MEDIUM);
 
-        when(assetService.getAsset(ASSET_ID)).thenReturn(asset);
+        when(assetRepository.findById(ASSET_ID)).thenReturn(java.util.Optional.of(asset));
         when(riskAssessmentRepositoryPort.findByAssetIdOrderByAssessedAtAsc(ASSET_ID))
                 .thenReturn(List.of(assessment));
 
@@ -124,7 +124,7 @@ class RiskHistoryServiceTest {
                 createAssessment(5, ASSET_ID, 84, RiskLevel.CRITICAL)
         );
 
-        when(assetService.getAsset(ASSET_ID)).thenReturn(asset);
+        when(assetRepository.findById(ASSET_ID)).thenReturn(java.util.Optional.of(asset));
         when(riskAssessmentRepositoryPort.findByAssetIdOrderByAssessedAtAsc(ASSET_ID))
                 .thenReturn(assessments);
 
@@ -153,7 +153,7 @@ class RiskHistoryServiceTest {
                 createAssessment(5, ASSET_ID, 42, RiskLevel.MEDIUM)
         );
 
-        when(assetService.getAsset(ASSET_ID)).thenReturn(asset);
+        when(assetRepository.findById(ASSET_ID)).thenReturn(java.util.Optional.of(asset));
         when(riskAssessmentRepositoryPort.findByAssetIdOrderByAssessedAtAsc(ASSET_ID))
                 .thenReturn(assessments);
 
@@ -173,7 +173,7 @@ class RiskHistoryServiceTest {
                 createAssessment(3, ASSET_ID, 50, RiskLevel.MEDIUM)
         );
 
-        when(assetService.getAsset(ASSET_ID)).thenReturn(asset);
+        when(assetRepository.findById(ASSET_ID)).thenReturn(java.util.Optional.of(asset));
         when(riskAssessmentRepositoryPort.findByAssetIdOrderByAssessedAtAsc(ASSET_ID))
                 .thenReturn(assessments);
 
@@ -198,7 +198,7 @@ class RiskHistoryServiceTest {
                 createAssessment(3, ASSET_ID, 63, RiskLevel.HIGH)
         );
 
-        when(assetService.getAsset(ASSET_ID)).thenReturn(asset);
+        when(assetRepository.findById(ASSET_ID)).thenReturn(java.util.Optional.of(asset));
         when(riskAssessmentRepositoryPort.findByAssetIdOrderByAssessedAtAsc(ASSET_ID))
                 .thenReturn(assessments);
 
@@ -224,7 +224,7 @@ class RiskHistoryServiceTest {
                 createAssessment(5, ASSET_ID, 84, RiskLevel.CRITICAL)
         );
 
-        when(assetService.getAsset(ASSET_ID)).thenReturn(asset);
+        when(assetRepository.findById(ASSET_ID)).thenReturn(java.util.Optional.of(asset));
         when(riskAssessmentRepositoryPort.findByAssetIdOrderByAssessedAtAsc(ASSET_ID))
                 .thenReturn(assessments);
 
@@ -244,7 +244,7 @@ class RiskHistoryServiceTest {
                 createAssessment(3, ASSET_ID, 91, RiskLevel.CRITICAL)
         );
 
-        when(assetService.getAsset(ASSET_ID)).thenReturn(asset);
+        when(assetRepository.findById(ASSET_ID)).thenReturn(java.util.Optional.of(asset));
         when(riskAssessmentRepositoryPort.findByAssetIdOrderByAssessedAtAsc(ASSET_ID))
                 .thenReturn(assessments);
 
@@ -267,7 +267,7 @@ class RiskHistoryServiceTest {
                 createAssessment(6, ASSET_ID, 91, RiskLevel.CRITICAL)
         );
 
-        when(assetService.getAsset(ASSET_ID)).thenReturn(asset);
+        when(assetRepository.findById(ASSET_ID)).thenReturn(java.util.Optional.of(asset));
         when(riskAssessmentRepositoryPort.findByAssetIdOrderByAssessedAtAsc(ASSET_ID))
                 .thenReturn(assessments);
 
@@ -301,7 +301,7 @@ class RiskHistoryServiceTest {
                 createAssessmentAt(3, ASSET_ID, t3, 30, RiskLevel.HIGH)
         );
 
-        when(assetService.getAsset(ASSET_ID)).thenReturn(asset);
+        when(assetRepository.findById(ASSET_ID)).thenReturn(java.util.Optional.of(asset));
         when(riskAssessmentRepositoryPort.findByAssetIdOrderByAssessedAtAsc(ASSET_ID))
                 .thenReturn(assessments);
 
@@ -323,7 +323,7 @@ class RiskHistoryServiceTest {
     // ---------------------------------------------------------------------
     @Test
     void getTrend_assetNotFound_shouldThrowResourceNotFoundException() {
-        when(assetService.getAsset(ASSET_ID))
+        when(assetRepository.findById(ASSET_ID))
                 .thenThrow(new ResourceNotFoundException("Asset not found: " + ASSET_ID));
 
         org.junit.jupiter.api.Assertions.assertThrows(

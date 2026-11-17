@@ -6,6 +6,7 @@ import com.powerassetintelligence.application.dto.RiskAssessmentSnapshotResponse
 import com.powerassetintelligence.application.dto.RiskFactorResponse;
 import com.powerassetintelligence.application.dto.RiskFeaturesResponse;
 import com.powerassetintelligence.application.port.in.AssessRiskUseCase;
+import com.powerassetintelligence.application.port.out.AssetRepositoryPort;
 import com.powerassetintelligence.application.port.out.PageRequest;
 import com.powerassetintelligence.application.port.out.PageResult;
 import com.powerassetintelligence.application.port.out.RiskAssessmentRepositoryPort;
@@ -27,7 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(readOnly = true)
 public class RiskAnalysisService implements AssessRiskUseCase {
 
-    private final AssetService assetService;
+    private final AssetRepositoryPort assetRepository;
     private final RiskFeaturesExtractor riskFeaturesExtractor;
     private final RiskAssessmentRepositoryPort riskAssessmentRepository;
     private final CoreRiskScoringPort riskEngine;
@@ -35,14 +36,14 @@ public class RiskAnalysisService implements AssessRiskUseCase {
     private final java.time.Clock clock;
 
     public RiskAnalysisService(
-            AssetService assetService,
+            AssetRepositoryPort assetRepository,
             RiskFeaturesExtractor riskFeaturesExtractor,
             RiskAssessmentRepositoryPort riskAssessmentRepository,
             CoreRiskScoringPort riskEngine,
             RiskExplanationService riskExplanationService,
             java.time.Clock clock
     ) {
-        this.assetService = assetService;
+        this.assetRepository = assetRepository;
         this.riskFeaturesExtractor = riskFeaturesExtractor;
         this.riskAssessmentRepository = riskAssessmentRepository;
         this.riskEngine = riskEngine;
@@ -58,7 +59,8 @@ public class RiskAnalysisService implements AssessRiskUseCase {
 
     @Transactional
     public RiskAssessmentDetailsResponse assess(UUID assetId) {
-        Asset asset = assetService.getAsset(assetId);
+        Asset asset = assetRepository.findById(assetId)
+                .orElseThrow(() -> new ResourceNotFoundException("Asset not found: " + assetId));
         RiskFeaturesExtractor.ExtractResult extractResult = riskFeaturesExtractor.extractWithSnapshot(asset);
         RiskFeatures features = extractResult.features();
         RiskAssessmentSnapshot snapshot = extractResult.snapshot();
@@ -89,14 +91,16 @@ public class RiskAnalysisService implements AssessRiskUseCase {
     }
 
     public RiskAssessmentResponse getLatest(UUID assetId) {
-        assetService.getAsset(assetId);
+        assetRepository.findById(assetId)
+                .orElseThrow(() -> new ResourceNotFoundException("Asset not found: " + assetId));
         return riskAssessmentRepository.findFirstByAssetIdOrderByAssessedAtDesc(assetId)
                 .map(this::toResponse)
                 .orElseThrow(() -> new ResourceNotFoundException("Risk assessment not found for asset: " + assetId));
     }
 
     public PageResult<RiskAssessmentResponse> findByAsset(UUID assetId, PageRequest pageRequest) {
-        assetService.getAsset(assetId);
+        assetRepository.findById(assetId)
+                .orElseThrow(() -> new ResourceNotFoundException("Asset not found: " + assetId));
         var result = riskAssessmentRepository.findByAssetId(assetId, pageRequest);
         var content = result.content().stream().map(this::toResponse).toList();
         return new PageResult<>(content, result.page(), result.size(), result.totalElements(), result.totalPages());
