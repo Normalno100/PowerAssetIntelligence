@@ -56,6 +56,7 @@ public class RiskAnalysisService implements AssessRiskUseCase {
         return assess(assetId);
     }
 
+    @Transactional
     public RiskAssessmentDetailsResponse assess(UUID assetId) {
         Asset asset = assetService.getAsset(assetId);
         RiskFeaturesExtractor.ExtractResult extractResult = riskFeaturesExtractor.extractWithSnapshot(asset);
