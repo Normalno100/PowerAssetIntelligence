@@ -68,42 +68,23 @@ public class AssetService implements RegisterAssetUseCase {
     @Transactional
     public AssetResponse update(UUID assetId, AssetUpdateCommand command) {
         Asset asset = getAsset(assetId);
-
-        if (command.hasType()) {
-            asset.setType(command.type());
-        }
-        if (command.hasName()) {
-            asset.setName(command.trim(command.name()));
-        }
-        if (command.hasInstallationDate()) {
-            asset.setInstallationDate(command.installationDate());
-        }
-        if (command.hasStatus()) {
-            asset.setStatus(command.status());
-        }
-        if (command.hasLocation()) {
-            asset.setLocation(command.trim(command.location()));
-        }
-        if (command.hasManufacturer()) {
-            asset.setManufacturer(command.trim(command.manufacturer()));
-        }
-        if (command.hasCriticality()) {
-            asset.setCriticality(command.criticality());
-        }
-        if (command.hasExpectedServiceLifeYears()) {
-            asset.setExpectedServiceLifeYears(command.expectedServiceLifeYears());
-        }
-        if (command.hasTechnicalParameters()) {
-            asset.setTechnicalParameters(command.technicalParameters());
-        }
-
+        asset.updateFields(
+                command.hasName() ? command.trim(command.name()) : null,
+                command.hasInstallationDate() ? command.installationDate() : null,
+                command.hasStatus() ? command.status() : null,
+                command.hasLocation() ? command.trim(command.location()) : null,
+                command.hasManufacturer() ? command.trim(command.manufacturer()) : null,
+                command.hasCriticality() ? command.criticality() : null,
+                command.hasExpectedServiceLifeYears() ? command.expectedServiceLifeYears() : null,
+                command.hasTechnicalParameters() ? command.technicalParameters() : null
+        );
         return toResponse(assetRepository.save(asset));
     }
 
     @Transactional
     public AssetResponse decommission(UUID assetId) {
         Asset asset = getAsset(assetId);
-        asset.setStatus(AssetStatus.DECOMMISSIONED);
+        asset.decommission();
         return toResponse(assetRepository.save(asset));
     }
 
