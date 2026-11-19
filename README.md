@@ -73,19 +73,34 @@
 - Node.js 18+ (для frontend)
 - Python 3.12+ (для ML-сервиса)
 
-### Запуск через Docker (рекомендуется)
+### Локальный запуск (Docker Compose)
 
 ```bash
 # Клонирование репозитория
 git clone <repository-url>
 cd PowerAssetIntelligence
 
-# Создание .env файла
+# 1. Создайте .env из шаблона
 cp .env.example .env
 
-# Запуск всех сервисов
+# 2. Заполните все плейсхолдеры <CHANGE_ME> реальными значениями:
+#    - POSTGRES_PASSWORD  — пароль PostgreSQL (мин. 12 символов)
+#    - GRAFANA_USER       — логин Grafana admin
+#    - GRAFANA_PASSWORD   — пароль Grafana (мин. 12 символов)
+#
+# Генерация надёжного пароля:
+#   Windows PowerShell:
+#     [Convert]::ToBase64String((1..32 | ForEach-Object { Get-Random -Minimum 33 -Maximum 127 }) )
+#   Linux / WSL:
+#     openssl rand -base64 32
+#   Python:
+#     python -c "import secrets; print(secrets.token_urlsafe(32))"
+
+# 3. Запуск всех сервисов
 docker compose up -d --build
 ```
+
+> **Внимание:** Запуск `docker compose up` без заполненного `.env` (с плейсхолдерами `<CHANGE_ME>`) приведёт к ошибке инициализации контейнеров. Все чувствительные переменные должны быть явно указаны в `.env`.
 
 ### Доступные сервисы
 
@@ -96,7 +111,7 @@ docker compose up -d --build
 | API Health | `/actuator/health` | Статус приложения |
 | Swagger UI | `/swagger-ui.html` | Документация API |
 | Prometheus | `http://localhost:9090` | Метрики |
-| Grafana | `http://localhost:3000` | Визуализация (admin/admin) |
+| Grafana | `http://localhost:3000` | Визуализация (логин/пароль из `.env`) |
 | ML Service | `http://localhost:8000` | ML инференс |
 
 ### Остановка

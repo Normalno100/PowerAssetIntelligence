@@ -39,3 +39,8 @@ bin/
 ### Mac OS ###
 .DS_Store
 /.gigacode/
+
+### Environment secrets ###
+.env
+.env.*
+!.env.example
