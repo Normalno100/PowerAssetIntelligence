@@ -17,6 +17,17 @@ def health() -> dict[str, str]:
     return {"status": "ok"}
 
 
+@app.get("/model-info")
+def model_info() -> dict:
+    """Return model metadata (version, hash, build date, etc.)."""
+    info = {"status": "loaded"}
+    if model.metadata:
+        info["metadata"] = model.metadata
+    else:
+        info["warning"] = "No metadata file found"
+    return info
+
+
 @app.post("/v1/predict", response_model=RiskScoreResponse)
 def predict(payload: TelemetryPayload) -> RiskScoreResponse:
     features = [

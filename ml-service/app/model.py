@@ -1,9 +1,12 @@
 from pathlib import Path
+import json
+
 import joblib
 import numpy as np
 import pandas as pd
 
 MODEL_PATH = Path(__file__).resolve().parents[1] / "models" / "failure_model.joblib"
+METADATA_PATH = Path(__file__).resolve().parents[1] / "models" / "metadata.json"
 
 
 FEATURE_COLUMNS = [
@@ -24,6 +27,14 @@ class FailureModel:
                 f"Model file was not found: {MODEL_PATH}. Run train.py first."
             )
         self.pipeline = joblib.load(MODEL_PATH)
+        self.metadata = self._load_metadata()
+
+    @staticmethod
+    def _load_metadata() -> dict:
+        """Load model metadata from JSON file."""
+        if METADATA_PATH.exists():
+            return json.loads(METADATA_PATH.read_text())
+        return {}
 
     def predict_failure_probability(self, features: list[float]) -> float:
         # Convert list to DataFrame with correct column names

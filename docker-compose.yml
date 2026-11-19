@@ -61,6 +61,10 @@ services:
   ml-service:
     build:
       context: ./ml-service
+      args:
+        MODEL_VERSION: ${MODEL_VERSION:-dev}
+        GIT_SHA: ${GIT_SHA:-unknown}
+        BUILD_DATE: ${BUILD_DATE:-unknown}
     container_name: power-asset-ml-service
     restart: unless-stopped
     environment:

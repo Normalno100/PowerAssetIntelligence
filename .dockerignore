@@ -4,3 +4,8 @@ target
 *.iml
 frontend/node_modules
 frontend/dist
+ml-service/data
+ml-service/models
+ml-service/train.py
+*.pyc
+__pycache__

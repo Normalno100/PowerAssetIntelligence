@@ -12,6 +12,7 @@ from sklearn.preprocessing import StandardScaler
 BASE_DIR = Path(__file__).resolve().parent
 DATA_PATH = BASE_DIR / "data" / "telemetry_training.csv"
 MODEL_PATH = BASE_DIR / "models" / "failure_model.joblib"
+METADATA_PATH = BASE_DIR / "models" / "metadata.json"
 
 FEATURE_COLUMNS = [
     "temperature_c",
@@ -65,7 +66,16 @@ def generate_synthetic_dataset(path: Path, n_samples: int = 3000) -> None:
     df.to_csv(path, index=False)
 
 
-def train() -> None:
+def train() -> dict | None:
+    """Train the model and save it with metadata.
+
+    Returns metadata dict that was saved alongside the model, or None if
+    the model file already exists.
+    """
+    if MODEL_PATH.exists():
+        print(f"Model already exists at {MODEL_PATH}, skipping training.")
+        return None
+
     if not DATA_PATH.exists():
         generate_synthetic_dataset(DATA_PATH)
 
@@ -94,6 +104,37 @@ def train() -> None:
     MODEL_PATH.parent.mkdir(parents=True, exist_ok=True)
     joblib.dump(pipeline, MODEL_PATH)
     print(f"Model saved to {MODEL_PATH}")
+
+    # ── Save model metadata ──────────────────────────────────────
+    import datetime
+    import hashlib
+    import os
+
+    model_version = os.environ.get("MODEL_VERSION", "dev-unknown")
+    git_sha = os.environ.get("GIT_SHA", "unknown")
+    build_date = os.environ.get("BUILD_DATE", datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"))
+
+    with open(MODEL_PATH, "rb") as f:
+        model_hash = hashlib.sha256(f.read()).hexdigest()
+
+    import importlib.metadata
+    metadata = {
+        "model_version": model_version,
+        "git_sha": git_sha,
+        "build_date": build_date,
+        "framework": "scikit-learn",
+        "framework_version": importlib.metadata.version("scikit-learn"),
+        "model_hash_sha256": model_hash,
+        "accuracy": round(acc, 4),
+        "feature_columns": FEATURE_COLUMNS,
+        "n_training_samples": len(x_train),
+        "n_test_samples": len(x_test),
+    }
+
+    METADATA_PATH.write_text(__import__("json").dumps(metadata, indent=2))
+    print(f"Metadata saved to {METADATA_PATH}")
+
+    return metadata
 
 
 if __name__ == "__main__":
