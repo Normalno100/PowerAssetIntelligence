@@ -24,8 +24,7 @@ services:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       TZ: UTC
-    ports:
-      - "${POSTGRES_PORT:-5432}:5432"
+      SERVICE_NAME: postgres
     volumes:
       - postgres-data:/var/lib/postgresql/data
     healthcheck:
@@ -34,7 +33,11 @@ services:
       timeout: 5s
       retries: 10
       start_period: 20s
-    logging: *default-logging
+    logging:
+      <<: *default-logging
+      options:
+        tag: "postgres"
+        env: "SERVICE_NAME"
 
   kafka:
     image: ${KAFKA_IMAGE:-bitnamilegacy/kafka:3.7.0}
@@ -62,8 +65,7 @@ services:
       KAFKA_CFG_TRANSACTION_STATE_LOG_MIN_ISR: 1
       KAFKA_CFG_LOG_RETENTION_HOURS: 168
       ALLOW_PLAINTEXT_LISTENER: "yes"
-    ports:
-      - "${KAFKA_EXTERNAL_PORT:-29092}:29092"
+      SERVICE_NAME: kafka
     volumes:
       - kafka-data:/bitnami/kafka
     healthcheck:
@@ -72,7 +74,11 @@ services:
       timeout: 10s
       retries: 10
       start_period: 60s
-    logging: *default-logging
+    logging:
+      <<: *default-logging
+      options:
+        tag: "kafka"
+        env: "SERVICE_NAME"
 
   ml-service:
     build:
@@ -93,15 +99,19 @@ services:
           cpus: '0.1'
     environment:
       TZ: UTC
-    ports:
-      - "${ML_SERVICE_PORT:-8000}:8000"
+      SERVICE_NAME: ml-service
+      ML_API_KEY: ${ML_API_KEY:-ml-dev-key-change-me}
     healthcheck:
       test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:8000/health')\""]
       interval: 15s
       timeout: 5s
       retries: 8
       start_period: 20s
-    logging: *default-logging
+    logging:
+      <<: *default-logging
+      options:
+        tag: "ml-service"
+        env: "SERVICE_NAME"
 
   app:
     build:
@@ -127,7 +137,7 @@ services:
       DB_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB}
       DB_USERNAME: ${POSTGRES_USER}
       DB_PASSWORD: ${POSTGRES_PASSWORD}
-      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-docker}
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-secured}
       MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: health,info,metrics,prometheus
       MANAGEMENT_ENDPOINT_HEALTH_SHOW_DETAILS: always
       # JVM heap = 75% от container limit (512M * 0.75 = 384M heap, ~128M metaspace/native)
@@ -136,15 +146,20 @@ services:
       KAFKA_TELEMETRY_RAW_TOPIC: ${KAFKA_TELEMETRY_RAW_TOPIC:-telemetry.raw.v1}
       KAFKA_TELEMETRY_DLT_TOPIC: ${KAFKA_TELEMETRY_DLT_TOPIC:-telemetry.raw.v1.dlt}
       LOGGING_LEVEL_ROOT: ${LOGGING_LEVEL_ROOT:-INFO}
-    ports:
-      - "${APP_PORT:-8080}:8080"
+      SERVICE_NAME: app
+      SECURITY_JWT_SECRET: ${SECURITY_JWT_SECRET:-dev-secret-do-not-use-in-production-at-least-32-chars-long}
+      ML_API_KEY: ${ML_API_KEY:-ml-dev-key-change-me}
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://localhost:8080/actuator/health/readiness | grep -q UP"]
       interval: 20s
       timeout: 5s
       retries: 10
       start_period: 45s
-    logging: *default-logging
+    logging:
+      <<: *default-logging
+      options:
+        tag: "app"
+        env: "SERVICE_NAME"
 
   prometheus:
     image: prom/prometheus:v2.54.1
@@ -164,12 +179,16 @@ services:
     volumes:
       - ./ops/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
       - prometheus-data:/prometheus
-    ports:
-      - "${PROMETHEUS_PORT:-9090}:9090"
     depends_on:
       app:
         condition: service_started
-    logging: *default-logging
+    environment:
+      SERVICE_NAME: prometheus
+    logging:
+      <<: *default-logging
+      options:
+        tag: "prometheus"
+        env: "SERVICE_NAME"
 
   loki:
     image: grafana/loki:3.1.1
@@ -187,13 +206,17 @@ services:
     volumes:
       - ./ops/loki/loki-config.yml:/etc/loki/local-config.yaml:ro
       - loki-data:/loki
-    ports:
-      - "${LOKI_PORT:-3100}:3100"
-    logging: *default-logging
+    environment:
+      SERVICE_NAME: loki
+    logging:
+      <<: *default-logging
+      options:
+        tag: "loki"
+        env: "SERVICE_NAME"
 
-  promtail:
-    image: grafana/promtail:3.1.1
-    container_name: power-asset-promtail
+  fluent-bit:
+    image: fluent/fluent-bit:3.0.9
+    container_name: power-asset-fluent-bit
     restart: unless-stopped
     deploy:
       resources:
@@ -203,11 +226,10 @@ services:
         reservations:
           memory: 32M
           cpus: '0.05'
-    command: ["-config.file=/etc/promtail/config.yml"]
     volumes:
       - /var/lib/docker/containers:/var/lib/docker/containers:ro
-      - /var/run/docker.sock:/var/run/docker.sock
-      - ./ops/promtail/promtail-config.yml:/etc/promtail/config.yml:ro
+      - ./ops/fluent-bit/fluent-bit.conf:/fluent-bit/etc/fluent-bit.conf:ro
+      - fluent-bit-db:/tmp/fluent-bit-db
     depends_on:
       - loki
     logging: *default-logging
@@ -231,9 +253,18 @@ services:
         condition: service_started
     environment:
       TZ: UTC
+      SERVICE_NAME: frontend
+      VITE_API_BASE_URL: /api
     ports:
       - "${FRONTEND_PORT:-3001}:80"
-    logging: *default-logging
+    volumes:
+      - ./frontend/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./ops/nginx/.htpasswd:/etc/nginx/conf.d/.htpasswd:ro
+    logging:
+      <<: *default-logging
+      options:
+        tag: "frontend"
+        env: "SERVICE_NAME"
 
   grafana:
     image: grafana/grafana:11.1.5
@@ -248,10 +279,11 @@ services:
           memory: 128M
           cpus: '0.1'
     environment:
-      GF_SECURITY_ADMIN_USER: ${GRAFANA_USER}
-      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD}
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:-admin}
       GF_USERS_DEFAULT_THEME: dark
       GF_INSTALL_PLUGINS: grafana-piechart-panel
+      SERVICE_NAME: grafana
     volumes:
       - grafana-data:/var/lib/grafana
       - ./ops/grafana/provisioning/datasources:/etc/grafana/provisioning/datasources:ro
@@ -259,14 +291,16 @@ services:
     depends_on:
       - prometheus
       - loki
-    ports:
-      - "${GRAFANA_PORT:-3000}:3000"
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://localhost:3000/api/health | grep -q ok"]
       interval: 20s
       timeout: 5s
       retries: 8
-    logging: *default-logging
+    logging:
+      <<: *default-logging
+      options:
+        tag: "grafana"
+        env: "SERVICE_NAME"
 
 volumes:
   postgres-data:
@@ -274,3 +308,4 @@ volumes:
   prometheus-data:
   grafana-data:
   loki-data:
+  fluent-bit-db:

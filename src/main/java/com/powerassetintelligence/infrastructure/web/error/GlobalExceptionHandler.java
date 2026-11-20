@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.HandlerMethodValidationException;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.servlet.NoHandlerFoundException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -95,5 +96,16 @@ public class GlobalExceptionHandler {
 
     private String formatFieldError(FieldError fieldError) {
         return fieldError.getField() + ": " + fieldError.getDefaultMessage();
+    }
+
+    @ExceptionHandler(Exception.class)
+    ResponseEntity<ProblemDetail> handleGeneric(Exception exception, HttpServletRequest request) {
+        HttpStatus status = exception instanceof org.springframework.web.servlet.NoHandlerFoundException
+                ? HttpStatus.NOT_FOUND
+                : HttpStatus.INTERNAL_SERVER_ERROR;
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(status, exception.getMessage());
+        problemDetail.setTitle(status.getReasonPhrase());
+        problemDetail.setInstance(URI.create(request.getRequestURI()));
+        return ResponseEntity.status(status).body(problemDetail);
     }
 }

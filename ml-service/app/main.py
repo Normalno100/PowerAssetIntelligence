@@ -1,4 +1,7 @@
-from fastapi import FastAPI
+import os
+
+from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse
 
 from app.model import FailureModel
 from app.schemas import RiskScoreResponse, TelemetryPayload
@@ -10,6 +13,26 @@ app = FastAPI(
 )
 
 model = FailureModel()
+
+# ─── API Key authentication ───
+ML_API_KEY = os.getenv("ML_API_KEY", "ml-dev-key-change-me")
+WHITELIST_PATHS = {"/health", "/docs", "/openapi.json", "/redoc"}
+
+
+@app.middleware("http")
+async def api_key_middleware(request: Request, call_next):
+    """Require X-API-Key header for all endpoints except whitelist."""
+    if request.url.path in WHITELIST_PATHS:
+        return await call_next(request)
+
+    key = request.headers.get("X-API-Key")
+    if not key or key != ML_API_KEY:
+        return JSONResponse(
+            status_code=401,
+            content={"detail": "Invalid or missing API key"},
+        )
+
+    return await call_next(request)
 
 
 @app.get("/health")

@@ -18,6 +18,7 @@ import com.powerassetintelligence.core.ai.RiskExplanationResult;
 import com.powerassetintelligence.core.ai.RiskExplanationService;
 import com.powerassetintelligence.domain.model.Asset;
 import com.powerassetintelligence.domain.model.RiskAssessment;
+import com.powerassetintelligence.application.util.RiskFeaturesExtractor;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;

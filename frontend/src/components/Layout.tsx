@@ -1,5 +1,6 @@
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import type { PropsWithChildren } from 'react';
+import { clearToken, isAuthenticated } from '../services/auth';
 
 const links = [
   { to: '/', label: 'Operations Dashboard' },
@@ -8,6 +9,12 @@ const links = [
 
 export function Layout({ children }: PropsWithChildren) {
   const location = useLocation();
+  const navigate = useNavigate();
+
+  function handleLogout() {
+    clearToken();
+    navigate('/login', { replace: true });
+  }
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100">
@@ -17,7 +24,7 @@ export function Layout({ children }: PropsWithChildren) {
             <h1 className="text-lg font-semibold">Power Asset Intelligence</h1>
             <p className="text-xs text-slate-400">AI Grid Asset Control Plane</p>
           </div>
-          <nav className="flex gap-2">
+          <nav className="flex items-center gap-2">
             {links.map((link) => (
               <Link
                 key={link.to}
@@ -31,6 +38,14 @@ export function Layout({ children }: PropsWithChildren) {
                 {link.label}
               </Link>
             ))}
+            {isAuthenticated() && (
+              <button
+                onClick={handleLogout}
+                className="rounded-md bg-slate-800 px-3 py-2 text-sm text-slate-300 hover:bg-slate-700"
+              >
+                Logout
+              </button>
+            )}
           </nav>
         </div>
       </header>

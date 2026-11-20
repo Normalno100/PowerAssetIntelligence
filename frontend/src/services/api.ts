@@ -1,4 +1,5 @@
 import type { Asset, Page, RiskAssessment, RiskAssessmentDetails, TelemetryRecord } from '../types/api';
+import { getToken, clearToken } from './auth';
 
 export interface ApiError extends Error {
   detail?: string;
@@ -13,6 +14,12 @@ const baseUrl = import.meta.env.VITE_API_BASE_URL || '';
 
 async function handleResponse(response: Response): Promise<void> {
   if (!response.ok) {
+    if (response.status === 401) {
+      clearToken();
+      window.location.href = '/login';
+      return;
+    }
+
     let message: string;
     try {
       const problem: ProblemDetail = await response.json();
@@ -27,9 +34,15 @@ async function handleResponse(response: Response): Promise<void> {
 }
 
 async function post<T>(path: string, body?: unknown): Promise<T> {
+  const token = getToken();
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+
   const response = await fetch(`${baseUrl}${path}`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers,
     body: body ? JSON.stringify(body) : undefined,
   });
   await handleResponse(response);
@@ -37,7 +50,13 @@ async function post<T>(path: string, body?: unknown): Promise<T> {
 }
 
 async function get<T>(path: string): Promise<T> {
-  const response = await fetch(`${baseUrl}${path}`);
+  const token = getToken();
+  const headers: Record<string, string> = {};
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+
+  const response = await fetch(`${baseUrl}${path}`, { headers });
   await handleResponse(response);
   return response.json() as Promise<T>;
 }

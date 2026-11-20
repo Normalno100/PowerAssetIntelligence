@@ -32,6 +32,8 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.transaction.support.TransactionCallback;
+import org.springframework.transaction.support.TransactionTemplate;
 
 @ExtendWith(MockitoExtension.class)
 class TelemetryServiceTest {
@@ -45,6 +47,9 @@ class TelemetryServiceTest {
     @Mock
     private TelemetryEventPublisher telemetryEventPublisher;
 
+    @Mock
+    private TransactionTemplate transactionTemplate;
+
     @Captor
     private ArgumentCaptor<TelemetryRecord> telemetryCaptor;
 
@@ -55,7 +60,8 @@ class TelemetryServiceTest {
 
     private Asset activeAsset;
     private Asset decommissionedAsset;
-    private TelemetryCreateCommand command;
+    private TelemetryCreateCommand commandWithExternalId;
+    private TelemetryCreateCommand commandWithoutExternalId;
 
     @BeforeEach
     void setUp() {
@@ -85,7 +91,7 @@ class TelemetryServiceTest {
                 Map.of()
         );
 
-        command = new TelemetryCreateCommand(
+        commandWithExternalId = new TelemetryCreateCommand(
                 ASSET_ID,
                 NOW,
                 BigDecimal.valueOf(65.0),
@@ -98,10 +104,25 @@ class TelemetryServiceTest {
                 "ext-tel-001"
         );
 
+        // Command without externalTelemetryId - bypasses persistWithRetry
+        commandWithoutExternalId = new TelemetryCreateCommand(
+                ASSET_ID,
+                NOW,
+                BigDecimal.valueOf(65.0),
+                BigDecimal.valueOf(70.0),
+                BigDecimal.valueOf(110.0),
+                BigDecimal.valueOf(150.0),
+                BigDecimal.valueOf(2.5),
+                1,
+                "sensor-001",
+                null  // No external ID
+        );
+
         service = new TelemetryService(
                 assetRepository,
                 telemetryRepository,
-                telemetryEventPublisher
+                telemetryEventPublisher,
+                transactionTemplate
         );
     }
 
@@ -113,13 +134,13 @@ class TelemetryServiceTest {
         TelemetryAcceptedResponse expected = new TelemetryAcceptedResponse(
                 UUID.randomUUID(), ASSET_ID, "ACCEPTED", NOW
         );
-        when(telemetryEventPublisher.publish(command)).thenReturn(expected);
+        when(telemetryEventPublisher.publish(commandWithExternalId)).thenReturn(expected);
 
-        TelemetryAcceptedResponse response = service.ingest(command);
+        TelemetryAcceptedResponse response = service.ingest(commandWithExternalId);
 
         assertNotNull(response);
         assertEquals("ACCEPTED", response.status());
-        verify(telemetryEventPublisher).publish(command);
+        verify(telemetryEventPublisher).publish(commandWithExternalId);
         verify(telemetryRepository, never()).save(any());
     }
 
@@ -130,10 +151,15 @@ class TelemetryServiceTest {
     void persist_withExistingExternalId_shouldReturnExistingRecord() {
         TelemetryRecord existing = createTelemetryRecord(
                 UUID.fromString("11111111-1111-1111-1111-111111111111"), ASSET_ID, NOW);
+        when(transactionTemplate.execute(any(TransactionCallback.class)))
+                .thenAnswer(invocation -> {
+                    TransactionCallback<Object> callback = invocation.getArgument(0);
+                    return callback.doInTransaction(null);
+                });
         when(telemetryRepository.findByExternalTelemetryId("ext-tel-001"))
                 .thenReturn(Optional.of(existing));
 
-        TelemetryResponse response = service.persist(command);
+        TelemetryResponse response = service.persist(commandWithExternalId);
 
         assertEquals(existing.id(), response.id());
         verify(telemetryRepository, never()).save(any());
@@ -147,7 +173,7 @@ class TelemetryServiceTest {
         when(assetRepository.findById(ASSET_ID)).thenReturn(Optional.of(activeAsset));
         when(telemetryRepository.save(any(TelemetryRecord.class))).thenAnswer(inv -> inv.getArgument(0));
 
-        TelemetryResponse response = service.persist(command);
+        TelemetryResponse response = service.persist(commandWithoutExternalId);
 
         assertNotNull(response);
         assertEquals(ASSET_ID, response.assetId());
@@ -155,7 +181,7 @@ class TelemetryServiceTest {
         TelemetryRecord captured = telemetryCaptor.getValue();
         assertEquals(ASSET_ID, captured.assetId());
         assertEquals(BigDecimal.valueOf(65.0), captured.temperatureCelsius());
-        assertEquals("ext-tel-001", captured.externalTelemetryId());
+        assertNull(captured.externalTelemetryId());
     }
 
     // ---------------------------------------------------------------------
@@ -165,7 +191,7 @@ class TelemetryServiceTest {
     void persist_decommissionedAsset_shouldThrowBusinessValidationException() {
         when(assetRepository.findById(ASSET_ID)).thenReturn(Optional.of(decommissionedAsset));
 
-        assertThrows(BusinessValidationException.class, () -> service.persist(command));
+        assertThrows(BusinessValidationException.class, () -> service.persist(commandWithoutExternalId));
 
         verify(telemetryRepository, never()).save(any());
     }
@@ -177,7 +203,7 @@ class TelemetryServiceTest {
     void persist_assetNotFound_shouldThrowResourceNotFoundException() {
         when(assetRepository.findById(ASSET_ID)).thenReturn(Optional.empty());
 
-        assertThrows(ResourceNotFoundException.class, () -> service.persist(command));
+        assertThrows(ResourceNotFoundException.class, () -> service.persist(commandWithoutExternalId));
 
         verify(telemetryRepository, never()).save(any());
     }

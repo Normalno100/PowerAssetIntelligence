@@ -12,18 +12,12 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Component;
 
 @Component
 public class TelemetryPersistenceAdapter implements TelemetryRepositoryPort {
     private final TelemetryRecordRepository repository;
     private final AssetRepository assetRepository;
-
-    @PersistenceContext
-    private EntityManager entityManager;
 
     public TelemetryPersistenceAdapter(TelemetryRecordRepository repository, AssetRepository assetRepository) {
         this.repository = repository;
@@ -41,22 +35,7 @@ public class TelemetryPersistenceAdapter implements TelemetryRepositoryPort {
                 record.timestamp(), record.temperatureCelsius(), record.loadPercent(), record.voltageKv(), record.currentAmpere(),
                 record.vibrationMmSec(), record.overheatingCount(), record.sourceSensorId(), record.externalTelemetryId());
 
-        try {
-            return PersistenceMapper.toDomain(repository.save(entity));
-        } catch (DataIntegrityViolationException e) {
-            // TOCTOU race: another thread committed a duplicate first.
-            // Flush to sync the failed insert, then retry the lookup.
-            entityManager.flush();
-
-            if (record.externalTelemetryId() != null) {
-                return repository.findByExternalTelemetryId(record.externalTelemetryId())
-                        .map(PersistenceMapper::toDomain)
-                        .orElseThrow(() -> e);
-            }
-            // For null externalTelemetryId — no idempotency key to look up by.
-            // This shouldn't happen for the unique constraint, but rethrow as a safety net.
-            throw e;
-        }
+        return PersistenceMapper.toDomain(repository.save(entity));
     }
     @Override public Optional<TelemetryRecord> findByExternalTelemetryId(String externalTelemetryId) { return repository.findByExternalTelemetryId(externalTelemetryId).map(PersistenceMapper::toDomain); }
     @Override public PageResult<TelemetryRecord> findByAssetId(UUID assetId, PageRequest pageRequest) {

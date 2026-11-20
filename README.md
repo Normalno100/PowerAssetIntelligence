@@ -83,10 +83,11 @@ cd PowerAssetIntelligence
 # 1. Создайте .env из шаблона
 cp .env.example .env
 
-# 2. Заполните все плейсхолдеры <CHANGE_ME> реальными значениями:
+# 2. Заполните все плейсхолдеры в `.env` реальными значениями:
 #    - POSTGRES_PASSWORD  — пароль PostgreSQL (мин. 12 символов)
-#    - GRAFANA_USER       — логин Grafana admin
-#    - GRAFANA_PASSWORD   — пароль Grafana (мин. 12 символов)
+#    - SECURITY_JWT_SECRET — секрет JWT (мин. 32 символа, см. "Безопасность")
+#    - ML_API_KEY          — ключ для межсервисной аутентификации
+#    - GRAFANA_PASSWORD    — пароль Grafana (мин. 12 символов)
 #
 # Генерация надёжного пароля:
 #   Windows PowerShell:
@@ -100,19 +101,21 @@ cp .env.example .env
 docker compose up -d --build
 ```
 
-> **Внимание:** Запуск `docker compose up` без заполненного `.env` (с плейсхолдерами `<CHANGE_ME>`) приведёт к ошибке инициализации контейнеров. Все чувствительные переменные должны быть явно указаны в `.env`.
+> **Внимание:** Запуск `docker compose up` без заполненного `.env` приведёт к ошибке инициализации контейнеров. Все чувствительные переменные должны быть явно указаны в `.env`. По умолчанию используется профиль `secured` с JWT-аутентификацией.
 
 ### Доступные сервисы
 
+> **Внимание:** В профиле `secured` все сервисы, кроме frontend, доступны только через nginx-proxy или из внутренней сети Docker. Прямой доступ по портам 8080/8000/9090/3000 закрыт.
+
 | Сервис | Порт | Описание |
 |--------|------|----------|
-| API | `http://localhost:8080` | REST API |
-| Frontend | `http://localhost:3001` | Web UI |
-| API Health | `/actuator/health` | Статус приложения |
-| Swagger UI | `/swagger-ui.html` | Документация API |
-| Prometheus | `http://localhost:9090` | Метрики |
-| Grafana | `http://localhost:3000` | Визуализация (логин/пароль из `.env`) |
-| ML Service | `http://localhost:8000` | ML инференс |
+| Frontend | `http://localhost:3001` | Web UI + nginx proxy |
+| API (через proxy) | `/api/v1/...` | REST API (через frontend) |
+| Grafana (через proxy) | `/grafana/...` | Визуализация (basic auth) |
+| Prometheus (через proxy) | `/prometheus/...` | Метрики (basic auth) |
+| ML (через proxy) | `/ml/...` | ML инференс (X-API-Key) |
+| API Health | `/actuator/health` | Статус приложения (public) |
+| Swagger UI | `/swagger-ui.html` | Документация API (public) |
 
 ### Остановка
 
@@ -130,6 +133,95 @@ docker compose logs -f
 docker compose logs -f app
 docker compose logs -f ml-service
 ```
+
+---
+
+## 🔒 Безопасность
+
+### Профили
+
+| Профиль | Аутентификация API | ML API Key | Basic auth Grafana/Prometheus | Назначение |
+|---------|-------------------|------------|-------------------------------|-----------|
+| `dev` (по умолчанию) | ❌ Отключена | ❌ Отключён | ❌ Отключён | Локальная разработка |
+| `secured` | ✅ JWT | ✅ Обязательный | ✅ Включён | Docker-окружение |
+
+### Переключение профиля
+
+```bash
+# Dev — без аутентификации (локальная разработка)
+SPRING_PROFILES_ACTIVE=dev docker compose up
+
+# Secured — с аутентификацией (docker-окружение)
+SPRING_PROFILES_ACTIVE=secured docker compose up
+```
+
+### Аутентификация Backend API (JWT)
+
+При профиле `secured` все запросы к `/api/v1/**` требуют заголовок `Authorization: Bearer <token>`.
+
+**Получение токена:**
+```bash
+curl -X POST http://localhost:3001/api/v1/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"username":"admin","password":"admin123"}'
+```
+
+**Использование токена:**
+```bash
+curl http://localhost:3001/api/v1/assets \
+  -H "Authorization: Bearer <token>"
+```
+
+**Дев-учётные данные:**
+| Параметр | Значение |
+|----------|----------|
+| Username | `admin` |
+| Password | `admin123` |
+
+> В production: учётные данные хранятся в БД с BCrypt-хешированием.
+
+### ML-сервис (X-API-Key)
+
+ML-сервис проверяет заголовок `X-API-Key` для всех запросов, кроме `/health`.
+
+```bash
+# Без ключа → 401
+curl http://localhost:3001/ml/health
+
+# С ключом → 200
+curl http://localhost:3001/ml/v1/predict \
+  -H "X-API-Key: ml-dev-key-change-me" \
+  -H "Content-Type: application/json" \
+  -d '{"asset_id":"..."}'
+```
+
+### Grafana / Prometheus (Basic Auth)
+
+Доступ через nginx-proxy по путям `/grafana/` и `/prometheus/`.
+
+| Сервис | Логин | Пароль |
+|--------|-------|--------|
+| Grafana | `grafana` | `grafana123` |
+| Prometheus | `prometheus` | `prom123` |
+
+### Генерация секретов
+
+```bash
+# JWT Secret (мин. 32 символа)
+openssl rand -hex 32
+
+# ML API Key
+openssl rand -hex 16
+```
+
+### Путь в production
+
+- JWT → OAuth2 / OIDC (Keycloak, Auth0)
+- Токены → httpOnly cookies вместо localStorage
+- TLS → certbot / Let's Encrypt на nginx
+- Секреты → HashiCorp Vault / AWS Secrets Manager
+- Пользователи → User entity + BCrypt в PostgreSQL
+
 
 ---
 

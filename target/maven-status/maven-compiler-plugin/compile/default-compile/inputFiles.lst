@@ -33,11 +33,11 @@ C:\Normalno\PowerAssetIntelligence\src\main\java\com\powerassetintelligence\appl
 C:\Normalno\PowerAssetIntelligence\src\main\java\com\powerassetintelligence\application\service\ResourceNotFoundException.java
 C:\Normalno\PowerAssetIntelligence\src\main\java\com\powerassetintelligence\application\service\RiskAnalysisService.java
 C:\Normalno\PowerAssetIntelligence\src\main\java\com\powerassetintelligence\application\service\RiskAssessmentComparisonService.java
-C:\Normalno\PowerAssetIntelligence\src\main\java\com\powerassetintelligence\application\service\RiskFeaturesExtractor.java
 C:\Normalno\PowerAssetIntelligence\src\main\java\com\powerassetintelligence\application\service\RiskHistoryService.java
 C:\Normalno\PowerAssetIntelligence\src\main\java\com\powerassetintelligence\application\service\TelemetryService.java
 C:\Normalno\PowerAssetIntelligence\src\main\java\com\powerassetintelligence\core\ai\CoreRiskScoringPort.java
 C:\Normalno\PowerAssetIntelligence\src\main\java\com\powerassetintelligence\core\ai\DeterministicRiskExplanationService.java
+C:\Normalno\PowerAssetIntelligence\src\main\java\com\powerassetintelligence\core\ai\feature\RiskFeaturesExtractor.java
 C:\Normalno\PowerAssetIntelligence\src\main\java\com\powerassetintelligence\core\ai\RiskChangeDirection.java
 C:\Normalno\PowerAssetIntelligence\src\main\java\com\powerassetintelligence\core\ai\RiskExplanationResult.java
 C:\Normalno\PowerAssetIntelligence\src\main\java\com\powerassetintelligence\core\ai\RiskExplanationService.java
@@ -70,6 +70,7 @@ C:\Normalno\PowerAssetIntelligence\src\main\java\com\powerassetintelligence\doma
 C:\Normalno\PowerAssetIntelligence\src\main\java\com\powerassetintelligence\domain\model\TelemetryRecord.java
 C:\Normalno\PowerAssetIntelligence\src\main\java\com\powerassetintelligence\infrastructure\config\CoreAiConfiguration.java
 C:\Normalno\PowerAssetIntelligence\src\main\java\com\powerassetintelligence\infrastructure\config\OpenApiConfiguration.java
+C:\Normalno\PowerAssetIntelligence\src\main\java\com\powerassetintelligence\infrastructure\config\TransactionConfiguration.java
 C:\Normalno\PowerAssetIntelligence\src\main\java\com\powerassetintelligence\infrastructure\messaging\kafka\KafkaTelemetryConfiguration.java
 C:\Normalno\PowerAssetIntelligence\src\main\java\com\powerassetintelligence\infrastructure\messaging\kafka\message\TelemetryMessage.java
 C:\Normalno\PowerAssetIntelligence\src\main\java\com\powerassetintelligence\infrastructure\messaging\kafka\TelemetryKafkaConsumer.java
@@ -90,8 +91,14 @@ C:\Normalno\PowerAssetIntelligence\src\main\java\com\powerassetintelligence\infr
 C:\Normalno\PowerAssetIntelligence\src\main\java\com\powerassetintelligence\infrastructure\persistence\repository\MaintenanceRecordRepository.java
 C:\Normalno\PowerAssetIntelligence\src\main\java\com\powerassetintelligence\infrastructure\persistence\repository\RiskAssessmentRepository.java
 C:\Normalno\PowerAssetIntelligence\src\main\java\com\powerassetintelligence\infrastructure\persistence\repository\TelemetryRecordRepository.java
+C:\Normalno\PowerAssetIntelligence\src\main\java\com\powerassetintelligence\infrastructure\security\dto\LoginRequest.java
+C:\Normalno\PowerAssetIntelligence\src\main\java\com\powerassetintelligence\infrastructure\security\dto\LoginResponse.java
+C:\Normalno\PowerAssetIntelligence\src\main\java\com\powerassetintelligence\infrastructure\security\JwtAuthenticationFilter.java
+C:\Normalno\PowerAssetIntelligence\src\main\java\com\powerassetintelligence\infrastructure\security\JwtTokenProvider.java
+C:\Normalno\PowerAssetIntelligence\src\main\java\com\powerassetintelligence\infrastructure\security\SecurityConfiguration.java
 C:\Normalno\PowerAssetIntelligence\src\main\java\com\powerassetintelligence\infrastructure\web\AssetController.java
 C:\Normalno\PowerAssetIntelligence\src\main\java\com\powerassetintelligence\infrastructure\web\AssetWebMapper.java
+C:\Normalno\PowerAssetIntelligence\src\main\java\com\powerassetintelligence\infrastructure\web\AuthController.java
 C:\Normalno\PowerAssetIntelligence\src\main\java\com\powerassetintelligence\infrastructure\web\dto\AssetCreateRequest.java
 C:\Normalno\PowerAssetIntelligence\src\main\java\com\powerassetintelligence\infrastructure\web\dto\AssetUpdateRequest.java
 C:\Normalno\PowerAssetIntelligence\src\main\java\com\powerassetintelligence\infrastructure\web\dto\MaintenanceCreateRequest.java
