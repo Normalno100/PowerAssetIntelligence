@@ -16,6 +16,8 @@ C:\Normalno\PowerAssetIntelligence\src\main\java\com\powerassetintelligence\appl
 C:\Normalno\PowerAssetIntelligence\src\main\java\com\powerassetintelligence\application\dto\TelemetryAcceptedResponse.java
 C:\Normalno\PowerAssetIntelligence\src\main\java\com\powerassetintelligence\application\dto\TelemetryCreateCommand.java
 C:\Normalno\PowerAssetIntelligence\src\main\java\com\powerassetintelligence\application\dto\TelemetryResponse.java
+C:\Normalno\PowerAssetIntelligence\src\main\java\com\powerassetintelligence\application\exception\BusinessValidationException.java
+C:\Normalno\PowerAssetIntelligence\src\main\java\com\powerassetintelligence\application\exception\ResourceNotFoundException.java
 C:\Normalno\PowerAssetIntelligence\src\main\java\com\powerassetintelligence\application\port\in\AssessRiskUseCase.java
 C:\Normalno\PowerAssetIntelligence\src\main\java\com\powerassetintelligence\application\port\in\IngestTelemetryUseCase.java
 C:\Normalno\PowerAssetIntelligence\src\main\java\com\powerassetintelligence\application\port\in\RecordMaintenanceUseCase.java
@@ -28,16 +30,14 @@ C:\Normalno\PowerAssetIntelligence\src\main\java\com\powerassetintelligence\appl
 C:\Normalno\PowerAssetIntelligence\src\main\java\com\powerassetintelligence\application\port\out\TelemetryEventPublisher.java
 C:\Normalno\PowerAssetIntelligence\src\main\java\com\powerassetintelligence\application\port\out\TelemetryRepositoryPort.java
 C:\Normalno\PowerAssetIntelligence\src\main\java\com\powerassetintelligence\application\service\AssetService.java
-C:\Normalno\PowerAssetIntelligence\src\main\java\com\powerassetintelligence\application\service\BusinessValidationException.java
 C:\Normalno\PowerAssetIntelligence\src\main\java\com\powerassetintelligence\application\service\MaintenanceService.java
-C:\Normalno\PowerAssetIntelligence\src\main\java\com\powerassetintelligence\application\service\ResourceNotFoundException.java
 C:\Normalno\PowerAssetIntelligence\src\main\java\com\powerassetintelligence\application\service\RiskAnalysisService.java
 C:\Normalno\PowerAssetIntelligence\src\main\java\com\powerassetintelligence\application\service\RiskAssessmentComparisonService.java
 C:\Normalno\PowerAssetIntelligence\src\main\java\com\powerassetintelligence\application\service\RiskHistoryService.java
 C:\Normalno\PowerAssetIntelligence\src\main\java\com\powerassetintelligence\application\service\TelemetryService.java
+C:\Normalno\PowerAssetIntelligence\src\main\java\com\powerassetintelligence\application\util\RiskFeaturesExtractor.java
 C:\Normalno\PowerAssetIntelligence\src\main\java\com\powerassetintelligence\core\ai\CoreRiskScoringPort.java
 C:\Normalno\PowerAssetIntelligence\src\main\java\com\powerassetintelligence\core\ai\DeterministicRiskExplanationService.java
-C:\Normalno\PowerAssetIntelligence\src\main\java\com\powerassetintelligence\core\ai\feature\RiskFeaturesExtractor.java
 C:\Normalno\PowerAssetIntelligence\src\main\java\com\powerassetintelligence\core\ai\RiskChangeDirection.java
 C:\Normalno\PowerAssetIntelligence\src\main\java\com\powerassetintelligence\core\ai\RiskExplanationResult.java
 C:\Normalno\PowerAssetIntelligence\src\main\java\com\powerassetintelligence\core\ai\RiskExplanationService.java
