@@ -11,6 +11,7 @@ import com.powerassetintelligence.application.port.in.RegisterAssetUseCase;
 import com.powerassetintelligence.application.port.out.AssetRepositoryPort;
 import com.powerassetintelligence.application.port.out.PageRequest;
 import com.powerassetintelligence.application.port.out.PageResult;
+import com.powerassetintelligence.application.exception.ResourceNotFoundException;
 import java.util.Map;
 import java.util.UUID;
 import org.springframework.data.domain.Pageable;

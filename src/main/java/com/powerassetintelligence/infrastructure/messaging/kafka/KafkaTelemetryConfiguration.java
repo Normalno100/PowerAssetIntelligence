@@ -1,6 +1,6 @@
 package com.powerassetintelligence.infrastructure.messaging.kafka;
 
-import com.powerassetintelligence.application.service.BusinessValidationException;
+import com.powerassetintelligence.application.exception.BusinessValidationException;
 import jakarta.validation.ConstraintViolationException;
 import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.consumer.ConsumerRecord;

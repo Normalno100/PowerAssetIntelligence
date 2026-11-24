@@ -1,7 +1,7 @@
 package com.powerassetintelligence.infrastructure.web.error;
 
-import com.powerassetintelligence.application.service.BusinessValidationException;
-import com.powerassetintelligence.application.service.ResourceNotFoundException;
+import com.powerassetintelligence.application.exception.BusinessValidationException;
+import com.powerassetintelligence.application.exception.ResourceNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import java.net.URI;
 import java.util.List;

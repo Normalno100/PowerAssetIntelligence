@@ -19,6 +19,7 @@ import com.powerassetintelligence.core.ai.RiskExplanationService;
 import com.powerassetintelligence.domain.model.Asset;
 import com.powerassetintelligence.domain.model.RiskAssessment;
 import com.powerassetintelligence.application.util.RiskFeaturesExtractor;
+import com.powerassetintelligence.application.exception.ResourceNotFoundException;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
@@ -58,7 +59,7 @@ public class RiskAnalysisService implements AssessRiskUseCase {
         return assess(assetId);
     }
 
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public RiskAssessmentDetailsResponse assess(UUID assetId) {
         Asset asset = assetRepository.findById(assetId)
                 .orElseThrow(() -> new ResourceNotFoundException("Asset not found: " + assetId));

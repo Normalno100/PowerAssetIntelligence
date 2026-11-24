@@ -12,7 +12,7 @@ import com.powerassetintelligence.application.dto.RiskAssessmentResponse;
 import com.powerassetintelligence.application.port.out.AssetRepositoryPort;
 import com.powerassetintelligence.application.port.out.RiskAssessmentRepositoryPort;
 import com.powerassetintelligence.application.service.RiskAnalysisService;
-import com.powerassetintelligence.core.ai.feature.RiskFeaturesExtractor;
+import com.powerassetintelligence.application.util.RiskFeaturesExtractor;
 import com.powerassetintelligence.core.ai.CoreRiskScoringPort;
 import com.powerassetintelligence.domain.model.RiskAssessmentSnapshot;
 import com.powerassetintelligence.core.ai.RiskExplanationResult;

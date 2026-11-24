@@ -7,6 +7,7 @@ import com.powerassetintelligence.application.port.out.RiskAssessmentRepositoryP
 import com.powerassetintelligence.core.ai.RiskTrendCalculator;
 import com.powerassetintelligence.core.ai.TrendDirection;
 import com.powerassetintelligence.domain.model.RiskAssessment;
+import com.powerassetintelligence.application.exception.ResourceNotFoundException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;

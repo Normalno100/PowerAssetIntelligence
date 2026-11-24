@@ -1,4 +1,4 @@
-package com.powerassetintelligence.application.service;
+package com.powerassetintelligence.application.exception;
 
 public class ResourceNotFoundException extends RuntimeException {
 

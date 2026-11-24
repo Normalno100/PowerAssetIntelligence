@@ -12,6 +12,8 @@ import com.powerassetintelligence.application.port.out.PageResult;
 import com.powerassetintelligence.domain.model.AssetStatus;
 import com.powerassetintelligence.domain.model.Asset;
 import com.powerassetintelligence.domain.model.TelemetryRecord;
+import com.powerassetintelligence.application.exception.BusinessValidationException;
+import com.powerassetintelligence.application.exception.ResourceNotFoundException;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
