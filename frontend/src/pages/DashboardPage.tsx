@@ -1,22 +1,46 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, useCallback } from 'react';
 import { Bar, Line } from 'react-chartjs-2';
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, BarElement, Tooltip, Legend } from 'chart.js';
 import { api } from '../services/api';
 import type { Asset, TelemetryRecord } from '../types/api';
 import { AssetTable } from '../components/AssetTable';
 import { Heatmap } from '../components/Heatmap';
+import { LoadingState } from '../components/ui/LoadingState';
+import { ErrorState } from '../components/ui/ErrorState';
+import { EmptyState } from '../components/ui/EmptyState';
+
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarElement, Tooltip, Legend);
 
 export function DashboardPage() {
   const [assets, setAssets] = useState<Asset[]>([]);
   const [telemetry, setTelemetry] = useState<TelemetryRecord[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const loadData = useCallback(() => {
+    setLoading(true);
+    setError(null);
+
+    api.getAssets()
+      .then((res) => {
+        setAssets(res.content);
+        if (res.content.length > 0) {
+          return api.getTelemetry(res.content[0].id);
+        }
+        return null;
+      })
+      .then((telemetryRes) => {
+        setTelemetry(telemetryRes?.content ?? []);
+      })
+      .catch((err: Error) => {
+        setError(err.message ?? 'Не удалось загрузить данные');
+      })
+      .finally(() => setLoading(false));
+  }, []);
 
   useEffect(() => {
-    api.getAssets().then((res) => {
-      setAssets(res.content);
-      if (res.content[0]) api.getTelemetry(res.content[0].id).then((t) => setTelemetry(t.content));
-    });
-  }, []);
+    loadData();
+  }, [loadData]);
 
   const telemetryChart = useMemo(() => ({
     labels: telemetry.map((t) => new Date(t.timestamp).toLocaleTimeString()),
@@ -30,6 +54,18 @@ export function DashboardPage() {
     const groups = assets.reduce<Record<string, number>>((acc, a) => ({ ...acc, [a.criticality]: (acc[a.criticality] || 0) + 1 }), {});
     return { labels: Object.keys(groups), datasets: [{ label: 'Assets', data: Object.values(groups), backgroundColor: ['#22c55e', '#f59e0b', '#ef4444'] }] };
   }, [assets]);
+
+  if (loading) {
+    return <LoadingState message="Загрузка дашборда…" />;
+  }
+
+  if (error) {
+    return <ErrorState message={error} onRetry={loadData} />;
+  }
+
+  if (assets.length === 0) {
+    return <EmptyState message="Оборудование не найдено" description="В системе пока нет зарегистрированных активов." />;
+  }
 
   return (
     <>

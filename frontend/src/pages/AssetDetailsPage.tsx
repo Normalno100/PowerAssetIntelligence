@@ -1,9 +1,13 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import { Line } from 'react-chartjs-2';
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Tooltip } from 'chart.js';
 import { api } from '../services/api';
 import type { Asset, RiskAssessment, TelemetryRecord } from '../types/api';
+import { LoadingState } from '../components/ui/LoadingState';
+import { ErrorState } from '../components/ui/ErrorState';
+import { EmptyState } from '../components/ui/EmptyState';
+
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Tooltip);
 
 export function AssetDetailsPage() {
@@ -11,40 +15,76 @@ export function AssetDetailsPage() {
   const [asset, setAsset] = useState<Asset | null>(null);
   const [telemetry, setTelemetry] = useState<TelemetryRecord[]>([]);
   const [risk, setRisk] = useState<RiskAssessment | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [riskLoading, setRiskLoading] = useState(false);
 
-  useEffect(() => {
-    api.getAsset(id)
-      .then(setAsset)
-      .catch(console.error);
-    api.getTelemetry(id)
-      .then((res) => setTelemetry(res.content))
-      .catch(console.error);
-    api.getLatestRisk(id)
-      .then(setRisk)
-      .catch(console.error);
+  const loadData = useCallback(() => {
+    setLoading(true);
+    setError(null);
+
+    let hasError = false;
+    let errorMessages: string[] = [];
+
+    const p1 = api.getAsset(id).then((a) => setAsset(a)).catch((err: Error) => {
+      hasError = true;
+      errorMessages.push(`Asset: ${err.message ?? 'unknown error'}`);
+    });
+
+    const p2 = api.getTelemetry(id).then((res) => setTelemetry(res.content)).catch((err: Error) => {
+      errorMessages.push(`Telemetry: ${err.message ?? 'unknown error'}`);
+    });
+
+    const p3 = api.getLatestRisk(id).then((r) => setRisk(r)).catch((err: Error) => {
+      errorMessages.push(`Risk: ${err.message ?? 'unknown error'}`);
+    });
+
+    Promise.all([p1, p2, p3]).finally(() => {
+      if (hasError) {
+        setError(errorMessages.join('; '));
+      }
+      setLoading(false);
+    });
   }, [id]);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
 
   const handleRunAssessment = () => {
     setRiskLoading(true);
     api.createAssessment(id)
       .then((details) => setRisk(details.assessment))
-      .catch(console.error)
+      .catch((err: Error) => {
+        setError(err.message ?? 'Не удалось создать оценку риска');
+      })
       .finally(() => setRiskLoading(false));
   };
+
+  if (loading) {
+    return <LoadingState message="Загрузка данных об оборудовании…" />;
+  }
+
+  if (error) {
+    return <ErrorState message={error} onRetry={loadData} />;
+  }
+
+  if (!asset) {
+    return <EmptyState message="Актив не найден" description="Убедитесь, что ID актива указан верно." />;
+  }
 
   return (
     <div className="space-y-4">
       <section className="rounded-xl border border-slate-800 bg-slate-900 p-4">
-        <h2 className="text-xl font-semibold">{asset?.name}</h2>
-        <p className="text-sm text-slate-400">{asset?.type} • {asset?.location} • {asset?.status}</p>
+        <h2 className="text-xl font-semibold">{asset.name}</h2>
+        <p className="text-sm text-slate-400">{asset.type} • {asset.location} • {asset.status}</p>
       </section>
       <section className="rounded-xl border border-slate-800 bg-slate-900 p-4"><h3 className="mb-3 font-semibold">Detailed Telemetry</h3><Line data={{ labels: telemetry.map((t) => new Date(t.timestamp).toLocaleTimeString()), datasets: [{ label: 'Vibration mm/s', data: telemetry.map((t) => t.vibrationMmSec), borderColor: '#a78bfa' }, { label: 'Temperature °C', data: telemetry.map((t) => t.temperatureCelsius), borderColor: '#f87171' }, { label: 'Load %', data: telemetry.map((t) => t.loadPercent), borderColor: '#fbbf24' }] }} /></section>
       <section className="rounded-xl border border-slate-800 bg-slate-900 p-4">
         <h3 className="mb-3 font-semibold">AI Risk Explainability</h3>
         {risk === null ? (
           riskLoading ? (
-            <p className="text-sm text-slate-500">Creating assessment…</p>
+            <LoadingState message="Создание оценки риска…" />
           ) : (
             <div className="space-y-3">
               <p className="text-sm text-slate-500">Risk assessment not yet available for this asset.</p>
