@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import { Line } from 'react-chartjs-2';
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Tooltip } from 'chart.js';
@@ -18,25 +18,36 @@ export function AssetDetailsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [riskLoading, setRiskLoading] = useState(false);
+  const abortRef = useRef<AbortController | null>(null);
 
   const loadData = useCallback(() => {
+    abortRef.current?.abort();
+    const controller = new AbortController();
+    abortRef.current = controller;
+
     setLoading(true);
     setError(null);
 
     let hasError = false;
     let errorMessages: string[] = [];
 
-    const p1 = api.getAsset(id).then((a) => setAsset(a)).catch((err: Error) => {
-      hasError = true;
-      errorMessages.push(`Asset: ${err.message ?? 'unknown error'}`);
+    const p1 = api.getAsset(id, controller.signal).then((a) => setAsset(a)).catch((err: Error) => {
+      if (err.name !== 'AbortError') {
+        hasError = true;
+        errorMessages.push(`Asset: ${err.message ?? 'unknown error'}`);
+      }
     });
 
-    const p2 = api.getTelemetry(id).then((res) => setTelemetry(res.content)).catch((err: Error) => {
-      errorMessages.push(`Telemetry: ${err.message ?? 'unknown error'}`);
+    const p2 = api.getTelemetry(id, controller.signal).then((res) => setTelemetry(res.content)).catch((err: Error) => {
+      if (err.name !== 'AbortError') {
+        errorMessages.push(`Telemetry: ${err.message ?? 'unknown error'}`);
+      }
     });
 
-    const p3 = api.getLatestRisk(id).then((r) => setRisk(r)).catch((err: Error) => {
-      errorMessages.push(`Risk: ${err.message ?? 'unknown error'}`);
+    const p3 = api.getLatestRisk(id, controller.signal).then((r) => setRisk(r)).catch((err: Error) => {
+      if (err.name !== 'AbortError') {
+        errorMessages.push(`Risk: ${err.message ?? 'unknown error'}`);
+      }
     });
 
     Promise.all([p1, p2, p3]).finally(() => {
@@ -49,6 +60,7 @@ export function AssetDetailsPage() {
 
   useEffect(() => {
     loadData();
+    return () => abortRef.current?.abort();
   }, [loadData]);
 
   const handleRunAssessment = () => {

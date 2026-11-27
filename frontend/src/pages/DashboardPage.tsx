@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, useCallback } from 'react';
+import { useEffect, useMemo, useState, useCallback, useRef } from 'react';
 import { Bar, Line } from 'react-chartjs-2';
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, BarElement, Tooltip, Legend } from 'chart.js';
 import { api } from '../services/api';
@@ -16,16 +16,22 @@ export function DashboardPage() {
   const [telemetry, setTelemetry] = useState<TelemetryRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const abortRef = useRef<AbortController | null>(null);
 
   const loadData = useCallback(() => {
+    // Cancel any in-flight request from a previous render
+    abortRef.current?.abort();
+    const controller = new AbortController();
+    abortRef.current = controller;
+
     setLoading(true);
     setError(null);
 
-    api.getAssets()
+    api.getAssets(controller.signal)
       .then((res) => {
         setAssets(res.content);
         if (res.content.length > 0) {
-          return api.getTelemetry(res.content[0].id);
+          return api.getTelemetry(res.content[0].id, controller.signal);
         }
         return null;
       })
@@ -33,13 +39,18 @@ export function DashboardPage() {
         setTelemetry(telemetryRes?.content ?? []);
       })
       .catch((err: Error) => {
-        setError(err.message ?? 'Не удалось загрузить данные');
+        // Ignore AbortError — it means the component was unmounted or reloaded
+        if (err.name !== 'AbortError') {
+          setError(err.message ?? 'Не удалось загрузить данные');
+        }
       })
       .finally(() => setLoading(false));
   }, []);
 
   useEffect(() => {
     loadData();
+    // Cleanup: abort in-flight request on unmount
+    return () => abortRef.current?.abort();
   }, [loadData]);
 
   const telemetryChart = useMemo(() => ({

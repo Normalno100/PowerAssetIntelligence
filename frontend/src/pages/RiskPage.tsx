@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { api } from '../services/api';
 import type { RiskAssessment } from '../types/api';
 import { LoadingState } from '../components/ui/LoadingState';
@@ -9,20 +9,29 @@ export function RiskPage() {
   const [topRisk, setTopRisk] = useState<RiskAssessment[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const abortRef = useRef<AbortController | null>(null);
 
   const loadData = useCallback(() => {
+    abortRef.current?.abort();
+    const controller = new AbortController();
+    abortRef.current = controller;
+
     setLoading(true);
     setError(null);
-    api.getTopRisks()
+
+    api.getTopRisks(controller.signal)
       .then((res) => setTopRisk(res.content))
       .catch((err: Error) => {
-        setError(err.message ?? 'Не удалось загрузить данные о рисках');
+        if (err.name !== 'AbortError') {
+          setError(err.message ?? 'Не удалось загрузить данные о рисках');
+        }
       })
       .finally(() => setLoading(false));
   }, []);
 
   useEffect(() => {
     loadData();
+    return () => abortRef.current?.abort();
   }, [loadData]);
 
   if (loading) {
