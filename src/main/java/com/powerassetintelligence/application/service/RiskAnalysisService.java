@@ -67,8 +67,11 @@ public class RiskAnalysisService implements AssessRiskUseCase {
         RiskFeatures features = extractResult.features();
         RiskAssessmentSnapshot snapshot = extractResult.snapshot();
 
-        // Phase 1: Deterministic scoring
+        // Phase 1: Deterministic scoring (with ML + fallback)
         RiskScoringResult scoringResult = riskEngine.score(features);
+        String scoringSource = scoringResult.scoringSource() != null
+                ? scoringResult.scoringSource()
+                : "RULES";
 
         // Phase 2: Explanation generation (strategy can be swapped)
         RiskExplanationResult explanationResult = riskExplanationService.explain(scoringResult, features);
@@ -84,7 +87,8 @@ public class RiskAnalysisService implements AssessRiskUseCase {
                 explanationResult.modelVersion(),
                 explanationResult.explanation(),
                 null,
-                snapshot
+                snapshot,
+                scoringSource
         );
         return new RiskAssessmentDetailsResponse(
                 toResponse(riskAssessmentRepository.save(assessment)),
@@ -128,7 +132,8 @@ public class RiskAnalysisService implements AssessRiskUseCase {
                 assessment.modelVersion(),
                 assessment.explanation(),
                 assessment.createdAt(),
-                RiskAssessmentSnapshotResponse.from(assessment.snapshot())
+                RiskAssessmentSnapshotResponse.from(assessment.snapshot()),
+                assessment.scoringSource()
         );
     }
 

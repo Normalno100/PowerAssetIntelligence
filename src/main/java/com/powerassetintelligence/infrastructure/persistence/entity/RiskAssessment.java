@@ -75,6 +75,9 @@ public class RiskAssessment {
     @Convert(converter = RiskAssessmentSnapshotConverter.class)
     private RiskAssessmentSnapshot snapshot;
 
+    @Column(name = "scoring_source", length = 32)
+    private String scoringSource;
+
     protected RiskAssessment() {
     }
 
@@ -90,9 +93,13 @@ public class RiskAssessment {
             String explanation
     ) {
         this(id, asset, assessedAt, riskScore, riskLevel, riskFactors, recommendations, modelVersion, explanation,
-                null, null);
+                null, null, null);
     }
 
+    /**
+     * Convenience constructor without scoringSource (for backward compatibility
+     * with existing code that doesn't pass it).
+     */
     public RiskAssessment(
             UUID id,
             AssetEntity asset,
@@ -106,6 +113,24 @@ public class RiskAssessment {
             Instant createdAt,
             RiskAssessmentSnapshot snapshot
     ) {
+        this(id, asset, assessedAt, riskScore, riskLevel, riskFactors, recommendations, modelVersion, explanation,
+                createdAt, snapshot, null);
+    }
+
+    public RiskAssessment(
+            UUID id,
+            AssetEntity asset,
+            Instant assessedAt,
+            BigDecimal riskScore,
+            RiskLevel riskLevel,
+            List<RiskFactor> riskFactors,
+            List<String> recommendations,
+            String modelVersion,
+            String explanation,
+            Instant createdAt,
+            RiskAssessmentSnapshot snapshot,
+            String scoringSource
+    ) {
         this.id = id;
         this.asset = asset;
         this.assessedAt = assessedAt;
@@ -117,6 +142,7 @@ public class RiskAssessment {
         this.explanation = explanation;
         this.createdAt = createdAt != null ? createdAt : Instant.now();
         this.snapshot = snapshot;
+        this.scoringSource = scoringSource;
     }
 
     @PrePersist
@@ -166,5 +192,9 @@ public class RiskAssessment {
 
     public RiskAssessmentSnapshot getSnapshot() {
         return snapshot;
+    }
+
+    public String getScoringSource() {
+        return scoringSource;
     }
 }

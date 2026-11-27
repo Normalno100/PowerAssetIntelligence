@@ -37,6 +37,16 @@ public record RiskScoringResult(
         /**
          * Ordered list of contributing risk factors.
          */
-        List<com.powerassetintelligence.domain.model.RiskFactor> riskFactors
+        List<com.powerassetintelligence.domain.model.RiskFactor> riskFactors,
+
+        /**
+         * Identifies the scoring source: ML model, rule-based engine, or
+         * fallback when ML was unavailable.
+         */
+        String scoringSource
 ) {
+    public RiskScoringResult(BigDecimal riskScore, com.powerassetintelligence.domain.model.RiskLevel riskLevel,
+            List<com.powerassetintelligence.domain.model.RiskFactor> riskFactors) {
+        this(riskScore, riskLevel, riskFactors, null);
+    }
 }

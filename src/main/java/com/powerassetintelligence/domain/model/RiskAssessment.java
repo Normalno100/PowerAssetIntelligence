@@ -24,7 +24,8 @@ public record RiskAssessment(
         String modelVersion,
         String explanation,
         Instant createdAt,
-        RiskAssessmentSnapshot snapshot) {
+        RiskAssessmentSnapshot snapshot,
+        String scoringSource) {
 
     public RiskAssessment {
         riskFactors = List.copyOf(riskFactors == null ? List.of() : riskFactors);
@@ -33,11 +34,11 @@ public record RiskAssessment(
 
     /**
      * Convenience constructor for backward compatibility.
-     * Creates an assessment with null createdAt and snapshot.
+     * Creates an assessment with null createdAt, snapshot, and scoringSource.
      */
     public RiskAssessment(UUID id, UUID assetId, Instant assessedAt, BigDecimal riskScore, RiskLevel riskLevel,
             List<RiskFactor> riskFactors, List<String> recommendations, String modelVersion, String explanation) {
         this(id, assetId, assessedAt, riskScore, riskLevel, riskFactors, recommendations, modelVersion, explanation,
-                null, null);
+                null, null, null);
     }
 }

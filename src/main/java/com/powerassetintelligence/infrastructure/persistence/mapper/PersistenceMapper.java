@@ -44,7 +44,8 @@ public final class PersistenceMapper {
                 entity.getModelVersion(),
                 entity.getExplanation(),
                 entity.getCreatedAt(),
-                entity.getSnapshot()
+                entity.getSnapshot(),
+                entity.getScoringSource()
         );
     }
 

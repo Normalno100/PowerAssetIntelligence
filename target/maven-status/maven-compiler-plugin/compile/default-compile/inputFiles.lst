@@ -68,6 +68,9 @@ C:\Normalno\PowerAssetIntelligence\src\main\java\com\powerassetintelligence\doma
 C:\Normalno\PowerAssetIntelligence\src\main\java\com\powerassetintelligence\domain\model\RiskFeatures.java
 C:\Normalno\PowerAssetIntelligence\src\main\java\com\powerassetintelligence\domain\model\RiskLevel.java
 C:\Normalno\PowerAssetIntelligence\src\main\java\com\powerassetintelligence\domain\model\TelemetryRecord.java
+C:\Normalno\PowerAssetIntelligence\src\main\java\com\powerassetintelligence\infrastructure\ai\ml\MlClient.java
+C:\Normalno\PowerAssetIntelligence\src\main\java\com\powerassetintelligence\infrastructure\ai\ml\MlScoringService.java
+C:\Normalno\PowerAssetIntelligence\src\main\java\com\powerassetintelligence\infrastructure\ai\ml\MlServiceUnavailableException.java
 C:\Normalno\PowerAssetIntelligence\src\main\java\com\powerassetintelligence\infrastructure\config\CoreAiConfiguration.java
 C:\Normalno\PowerAssetIntelligence\src\main\java\com\powerassetintelligence\infrastructure\config\OpenApiConfiguration.java
 C:\Normalno\PowerAssetIntelligence\src\main\java\com\powerassetintelligence\infrastructure\config\TransactionConfiguration.java

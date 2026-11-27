@@ -111,7 +111,7 @@ class RiskAnalysisServiceTest {
                     saved.id(), saved.assetId(), saved.assessedAt(),
                     saved.riskScore(), saved.riskLevel(), saved.riskFactors(),
                     saved.recommendations(), saved.modelVersion(), saved.explanation(),
-                    saved.createdAt(), saved.snapshot()
+                    saved.createdAt(), saved.snapshot(), saved.scoringSource()
             );
             return saved;
         });
